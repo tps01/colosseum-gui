@@ -1,0 +1,70 @@
+## Approved Software Licenses
+
+Only the following licenses are allowed:
+
+- Apache License 2.0
+- Boost Software License
+- BSD 2-Clause License
+- BSD 3-Clause License
+- CMU/CMD License
+- CPL v1.0
+- CPOL v1.02
+- ISC License
+- ICU License 1.8.1
+- Microsoft Public License
+- MIT License
+- Expat License
+- MIT-X11 License
+- X11 License
+- X License
+- MIT/X Consortium License
+- Historical Permission Notice and Disclaimer (HPND)
+- GNU Lesser General Public License (LGPL) — allowed only when used unmodified (no source modifications)
+- NASA Open Source Agreement 1.3
+- Public Domain
+- Python Software Foundation License v2 (Python 2.0.1 and greater)
+- SGI Free Software License B v2.0
+- SIL Open Font License (OFL) 1.1
+- Ubuntu Font License 1.0
+- Unicode License
+- Unlicense
+- W3C Software and Document License
+- W3C Software Notice and License
+- Zlib License
+
+---
+
+# What This Means in Practice
+
+- Before adding or updating dependencies, verify license compatibility against this allowlist.
+- If dependency license metadata is ambiguous, treat it as unapproved until clarified.
+- LGPL dependencies are allowed only if the LGPL-covered source is not modified in this project.
+- If LGPL-covered source modifications are required, treat as non-compliant unless explicitly re-approved and documented before merge.
+- If a dependency violates this rule, do not add it; propose a compliant alternative.
+- If an existing dependency is found non-compliant, flag it immediately for remediation.
+
+
+## Packaging
+
+- Provide exactly one simple pip install that gets everything needed to develop
+  and run tests (for example `pip install -e .` or `pip install <this-package>`).
+- Do not split runtime drivers or developer/test tooling into optional extras
+  such as `[web]`, `[desktop]`, `[test]`, `[static]`, or `[docs]`. Put those
+  packages in the main `dependencies` list in `pyproject.toml`.
+- Platform- or Python-version environment markers on individual dependencies are
+  fine when a package only applies on that platform.
+
+## Testing
+
+- Only write high value unit tests.
+- Do not prioritize code coverage for the sake of coverage. Better coverage can be achieved by keeping the project small and maintainable.
+- Static analysis does not need to apply to support scripts or tests. That level of meta-testing is not needed for this project.
+
+
+## Code Quality
+
+- Do not stub out planned features; that's pointless. This applies to code infrastructure, tests, exceptions, etc.
+- Do not over-use helper functions or lambda functions. While they have a place, sometimes it's more clear to juse do a one-off operation in-line.
+- Avoid magic numbers. Instead define a variable with a semantic meaning, or just place a comment above it.
+- Do not overengineer. Not everything needs an entire supporting system. Minimizing the footprint of your code is paramount for human readability.
+- Do not add fallback mechanisms for everything. Elaborate error handling is often unnecessary.

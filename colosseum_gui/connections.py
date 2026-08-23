@@ -1,0 +1,60 @@
+"""Resource cache for ``gui.web`` and ``gui.desktop`` backends."""
+
+from __future__ import annotations
+
+from typing import Any, cast
+
+from colosseum.config.loader import ConfigError
+from colosseum.context import get_context
+from colosseum.logging import get_logger
+from colosseum.resource_cache import cached_resource, close_cached_resources
+
+_logger = get_logger("colosseum.gui")
+
+
+def _cache_key(kind: str, resource_id: int) -> str:
+    return f"gui:backend:{kind}:{resource_id}"
+
+
+def get_config(kind: str, resource_id: int) -> dict[str, Any]:
+    ctx = get_context()
+    if ctx.config is None:
+        raise ConfigError("Configuration is not loaded. Call col.config.load_config(path).")
+    return cast(dict[str, Any], ctx.config.require_item(f"gui.{kind}", resource_id))
+
+
+def get_web(web_id: int) -> Any:  # noqa: ANN401
+    return _get_backend("web", web_id)
+
+
+def get_desktop(desktop_id: int) -> Any:  # noqa: ANN401
+    return _get_backend("desktop", desktop_id)
+
+
+def _get_backend(kind: str, resource_id: int) -> Any:  # noqa: ANN401
+    ctx = get_context()
+    key = _cache_key(kind, resource_id)
+    cfg = get_config(kind, resource_id)
+    driver = str(cfg.get("driver") or "").lower() or "unspecified"
+
+    def _open() -> Any:  # noqa: ANN401
+        from colosseum_gui.backends.factory import open_backend
+
+        return open_backend(kind, resource_id, cfg)
+
+    return cached_resource(
+        ctx.resource_cache,
+        key,
+        _open,
+        on_reuse=lambda: _logger.debug(
+            "Reusing cached gui backend gui.%s id=%s", kind, resource_id
+        ),
+        on_open=lambda: _logger.debug(
+            "Opening gui backend gui.%s id=%s driver=%s", kind, resource_id, driver
+        ),
+    )
+
+
+def close_all() -> None:
+    ctx = get_context()
+    close_cached_resources(ctx.resource_cache, (("gui:backend:",),), logger=_logger)
