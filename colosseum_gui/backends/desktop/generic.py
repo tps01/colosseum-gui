@@ -297,7 +297,7 @@ class _OsDesktop:
         raise NotImplementedError
 
 
-def _win_user32() -> Any:
+def _win_user32() -> Any:  # noqa: ANN401
     """Resolve ctypes.windll.user32 without assuming Windows stubs (CI is Linux)."""
     import ctypes
 
@@ -307,7 +307,7 @@ def _win_user32() -> Any:
     return windll.user32
 
 
-def _win_func_type(*args: Any) -> Any:
+def _win_func_type(*args: object) -> Any:  # noqa: ANN401
     """Resolve ctypes.WINFUNCTYPE without assuming Windows stubs."""
     import ctypes
 
