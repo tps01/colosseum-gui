@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from contextlib import suppress
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from colosseum_gui.exceptions import GuiConnectionError
 
@@ -197,7 +197,12 @@ class PlaywrightWebBackend:
         return path
 
     def capture_tree(self) -> dict[str, Any]:
-        snapshot = self._page.accessibility.snapshot()
+        # Playwright removed Page.accessibility; prefer aria_snapshot when present.
+        accessibility = getattr(self._page, "accessibility", None)
+        if accessibility is not None:
+            snapshot: Any = accessibility.snapshot()
+        else:
+            snapshot = self._page.locator(":root").aria_snapshot()
         return {"url": self._page.url, "accessibility": snapshot}
 
     def get_text(
@@ -281,7 +286,8 @@ class PlaywrightWebBackend:
             kwargs: dict[str, Any] = {}
             if name is not None:
                 kwargs["name"] = name
-            return self._page.get_by_role(role, **kwargs)
+            # Role is a runtime string; Playwright stubs expect a Literal union.
+            return self._page.get_by_role(cast(Any, role), **kwargs)
         if css is not None:
             return self._page.locator(css)
         if xpath is not None:

@@ -16,6 +16,14 @@ class PywinautoDesktopBackend:
 
     driver_name = "pywinauto"
 
+    # Declared at class scope so Linux mypy (sys.platform != win) still types methods.
+    desktop_id: int
+    config: dict[str, Any]
+    title: str
+    _owns_app: bool
+    _app: Any
+    _window: Any
+
     def __init__(self, *, desktop_id: int, config: dict[str, Any]) -> None:
         if not sys.platform.startswith("win"):
             raise OSError("pywinauto is only available on Windows")

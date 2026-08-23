@@ -297,6 +297,26 @@ class _OsDesktop:
         raise NotImplementedError
 
 
+def _win_user32() -> Any:
+    """Resolve ctypes.windll.user32 without assuming Windows stubs (CI is Linux)."""
+    import ctypes
+
+    windll = getattr(ctypes, "windll", None)
+    if windll is None:  # pragma: no cover - Windows-only path
+        raise RuntimeError("ctypes.windll is only available on Windows")
+    return windll.user32
+
+
+def _win_func_type(*args: Any) -> Any:
+    """Resolve ctypes.WINFUNCTYPE without assuming Windows stubs."""
+    import ctypes
+
+    factory = getattr(ctypes, "WINFUNCTYPE", None)
+    if factory is None:  # pragma: no cover - Windows-only path
+        raise RuntimeError("ctypes.WINFUNCTYPE is only available on Windows")
+    return factory(*args)
+
+
 class _WindowsDesktop(_OsDesktop):
     def __init__(self, *, title: str) -> None:
         self.title = title
@@ -313,15 +333,12 @@ class _WindowsDesktop(_OsDesktop):
         self._mouse_event(0x0004)  # LEFTUP
 
     def move_to(self, x: float, y: float) -> None:
-        import ctypes
-
-        ctypes.windll.user32.SetCursorPos(int(x), int(y))
+        _win_user32().SetCursorPos(int(x), int(y))
 
     def type_text(self, text: str) -> None:
-        import ctypes
-
+        user32 = _win_user32()
         for ch in text:
-            vk = ctypes.windll.user32.VkKeyScanW(ord(ch))
+            vk = user32.VkKeyScanW(ord(ch))
             if vk == -1:
                 continue
             code = vk & 0xFF
@@ -342,10 +359,10 @@ class _WindowsDesktop(_OsDesktop):
         import ctypes
         from ctypes import wintypes
 
-        user32 = ctypes.windll.user32
+        user32 = _win_user32()
         results: list[dict[str, Any]] = []
 
-        @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)  # type: ignore[untyped-decorator]
+        @_win_func_type(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)  # type: ignore[untyped-decorator]
         def _enum(hwnd: int, _lparam: int) -> bool:
             if not user32.IsWindowVisible(hwnd):
                 return True
@@ -388,11 +405,10 @@ class _WindowsDesktop(_OsDesktop):
     def _monitor_region(self) -> dict[str, int]:
         if self._hwnd is None:
             return {"left": 0, "top": 0, "width": 0, "height": 0}
-        import ctypes
-        from ctypes import wintypes
+        from ctypes import byref, wintypes
 
         rect = wintypes.RECT()
-        ctypes.windll.user32.GetWindowRect(self._hwnd, ctypes.byref(rect))
+        _win_user32().GetWindowRect(self._hwnd, byref(rect))
         return {
             "left": int(rect.left),
             "top": int(rect.top),
@@ -405,10 +421,10 @@ class _WindowsDesktop(_OsDesktop):
         import ctypes
         from ctypes import wintypes
 
-        user32 = ctypes.windll.user32
+        user32 = _win_user32()
         found: list[int] = []
 
-        @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)  # type: ignore[untyped-decorator]
+        @_win_func_type(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)  # type: ignore[untyped-decorator]
         def _enum(hwnd: int, _lparam: int) -> bool:
             if not user32.IsWindowVisible(hwnd):
                 return True
@@ -429,16 +445,12 @@ class _WindowsDesktop(_OsDesktop):
 
     @staticmethod
     def _mouse_event(flags: int) -> None:
-        import ctypes
-
-        ctypes.windll.user32.mouse_event(flags, 0, 0, 0, 0)
+        _win_user32().mouse_event(flags, 0, 0, 0, 0)
 
     @staticmethod
     def _key_event(vk: int, *, key_up: bool) -> None:
-        import ctypes
-
         flags = 0x0002 if key_up else 0
-        ctypes.windll.user32.keybd_event(vk, 0, flags, 0)
+        _win_user32().keybd_event(vk, 0, flags, 0)
 
 
 class _LinuxX11Desktop(_OsDesktop):
@@ -575,7 +587,10 @@ def _mss_grab(*, monitor: dict[str, int]) -> bytes:
             shot = sct.grab(sct.monitors[1])
         else:
             shot = sct.grab(monitor)
-        return bytes(mss.tools.to_png(shot.rgb, shot.size))
+        png = mss.tools.to_png(shot.rgb, shot.size)
+        if png is None:
+            raise GuiConnectionError("mss failed to encode PNG screenshot")
+        return bytes(png)
 
 
 _VK_MAP = {
