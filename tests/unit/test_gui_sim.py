@@ -57,11 +57,8 @@ def test_desktop_sim_image_click(loaded, tmp_path: Path) -> None:
 
 
 def test_desktop_sim_rejects_web_locators(loaded) -> None:
-    # @command swallows exceptions; call the backend directly for the contract.
-    from colosseum_gui.connections import get_desktop
-
     with pytest.raises(ValueError, match="web-only|css/xpath"):
-        get_desktop(1).click(css=".btn")
+        col.gui.desktop.click(desktop_id=1, css=".btn")
 
 
 def test_desktop_generic_rejects_uia_on_capability(tmp_path: Path, ctx) -> None:
