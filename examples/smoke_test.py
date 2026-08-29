@@ -18,7 +18,7 @@ def main() -> None:
 
     col.gui.desktop.click(desktop_id=1, automation_id="StartBtn")
     col.gui.desktop.verify_text(
-        desktop_id=1, key="btn", expected="Running", automation_id="StartBtn"
+        desktop_id=1, key="btn", expected="Running", automation_id="StartBtn",
     )
     col.gui.desktop.capture_screenshot(desktop_id=1, path="captures/desktop_after_start.png")
 

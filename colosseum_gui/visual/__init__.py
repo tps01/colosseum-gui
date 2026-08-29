@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from colosseum_gui.visual.pngutil import read_png, write_png
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def pixel_diff_ratio(
@@ -18,7 +21,7 @@ def pixel_diff_ratio(
     bw, bh, b_rgb = read_png(baseline_path)
     if (aw, ah) != (bw, bh):
         raise ValueError(
-            f"screenshot size {aw}x{ah} does not match baseline {bw}x{bh}"
+            f"screenshot size {aw}x{ah} does not match baseline {bw}x{bh}",
         )
     differing = 0
     total = aw * ah
@@ -72,7 +75,7 @@ def sample_mean_rgb(
         raise ValueError("sample rectangle must be positive and in-bounds")
     if x + width > img_w or y + height > img_h:
         raise ValueError(
-            f"sample {x},{y} {width}x{height} outside image {img_w}x{img_h}"
+            f"sample {x},{y} {width}x{height} outside image {img_w}x{img_h}",
         )
     total_r = total_g = total_b = 0
     count = 0

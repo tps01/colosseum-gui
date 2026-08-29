@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import colosseum.context as context_module
 import pytest
 from colosseum.config import load_config
 from colosseum.plugins.loader import ensure_plugins_loaded
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from pathlib import Path
 
 
 @pytest.fixture

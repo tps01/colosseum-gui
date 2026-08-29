@@ -430,7 +430,7 @@ def verify_text(
     """
     _ = key
     actual = get_web(web_id).get_text(
-        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
     )
     if actual == expected:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
@@ -470,7 +470,7 @@ def verify_visible(
     """
     _ = key
     actual = get_web(web_id).is_visible(
-        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
     )
     if actual:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
@@ -510,7 +510,7 @@ def verify_enabled(
     """
     _ = key
     actual = get_web(web_id).is_enabled(
-        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
     )
     if actual:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)

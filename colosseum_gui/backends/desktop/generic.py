@@ -38,7 +38,7 @@ class GenericDesktopBackend:
             if not display:
                 raise OSError(
                     "generic desktop on Linux requires $DISPLAY "
-                    "(X11 or XWayland); set display= in [[gui.desktop]] or export DISPLAY"
+                    "(X11 or XWayland); set display= in [[gui.desktop]] or export DISPLAY",
                 )
             self._impl = _LinuxX11Desktop(title=self.title, display=display)
         else:
@@ -380,7 +380,7 @@ class _WindowsDesktop(_OsDesktop):
                     "y": int(rect.top),
                     "w": int(rect.right - rect.left),
                     "h": int(rect.bottom - rect.top),
-                }
+                },
             )
             return True
 
@@ -462,7 +462,7 @@ class _LinuxX11Desktop(_OsDesktop):
         except ImportError as exc:  # pragma: no cover
             raise GuiConnectionError(
                 "python-xlib is not installed; reinstall colosseum-gui on Linux "
-                "(python-xlib is a required dependency on linux)"
+                "(python-xlib is a required dependency on linux)",
             ) from exc
 
         self.title = title
@@ -579,7 +579,7 @@ def _mss_grab(*, monitor: dict[str, int]) -> bytes:
     except ImportError as exc:  # pragma: no cover
         raise GuiConnectionError(
             "mss is not installed; reinstall colosseum-gui "
-            "(mss is a required dependency)"
+            "(mss is a required dependency)",
         ) from exc
 
     with mss.mss() as sct:

@@ -33,7 +33,7 @@ class SimDesktopBackend:
                 "text": "Start",
                 "visible": True,
                 "enabled": True,
-            }
+            },
         }
         self._last_click: tuple[float, float] | None = None
 
@@ -184,7 +184,7 @@ class SimDesktopBackend:
         automation_id: str | None = None,
     ) -> bool:
         return bool(
-            self._find_uia(automation_id=automation_id, role=role, name=name).get("visible")
+            self._find_uia(automation_id=automation_id, role=role, name=name).get("visible"),
         )
 
     def is_enabled(
@@ -195,7 +195,7 @@ class SimDesktopBackend:
         automation_id: str | None = None,
     ) -> bool:
         return bool(
-            self._find_uia(automation_id=automation_id, role=role, name=name).get("enabled")
+            self._find_uia(automation_id=automation_id, role=role, name=name).get("enabled"),
         )
 
     def capture_meta(self) -> dict[str, Any]:

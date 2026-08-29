@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from PIL import Image, UnidentifiedImageError
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def write_png(path: Path, width: int, height: int, rgb: bytes) -> None:
