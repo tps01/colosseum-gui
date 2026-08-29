@@ -20,12 +20,12 @@ also run `playwright install-deps` when using headed Chromium.
 ## Kind x driver matrix
 
 | Kind | Driver | Platforms | Notes |
-|------|--------|-----------|-------|
+| --- | --- | --- | --- |
 | `gui.web` | `sim` | any | CI / unit tests |
-| `gui.web` | `playwright` | Linux, Windows | Role/CSS locators, navigate, nav timing |
+| `gui.web` | `playwright` | Linux, Windows | Role/CSS locators, nav timing |
 | `gui.desktop` | `sim` | any | CI / unit tests |
-| `gui.desktop` | `generic` | Linux (X11), Windows | Best-effort screenshot, image/coord click, keys |
-| `gui.desktop` | `pywinauto` | **Windows only** | UIA AutomationId / Name / Invoke |
+| `gui.desktop` | `generic` | Linux, Windows | Screenshot, image/coord click |
+| `gui.desktop` | `pywinauto` | Windows only | UIA AutomationId / Invoke |
 
 `driver=generic` on Linux is the X11 / X11-forwarded path. AT-SPI is not
 forwarded over `ssh -X`; use image or coordinates, not UIA-style locators.

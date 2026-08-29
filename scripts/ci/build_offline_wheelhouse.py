@@ -160,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
                 "first_party:",
                 *[f"  {p.name}" for p in first_party],
                 "",
-            ]
+            ],
         ),
         encoding="utf-8",
     )
@@ -180,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
                 "",
                 "Playwright browsers are not bundled; run playwright install when needed.",
                 "",
-            ]
+            ],
         ),
         encoding="utf-8",
     )

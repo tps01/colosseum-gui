@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import time
 from contextlib import suppress
-from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from colosseum_gui.exceptions import GuiConnectionError
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class PlaywrightWebBackend:
@@ -21,7 +23,7 @@ class PlaywrightWebBackend:
         except ImportError as exc:  # pragma: no cover - install/env issue
             raise GuiConnectionError(
                 "playwright is not installed; reinstall colosseum-gui "
-                "(playwright is a required dependency)"
+                "(playwright is a required dependency)",
             ) from exc
 
         self.web_id = web_id
@@ -97,7 +99,7 @@ class PlaywrightWebBackend:
     ) -> None:
         _ = (automation_id, image)
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         )
         force = (input or "invoke") == "mouse"
         locator.click(force=force)
@@ -119,7 +121,7 @@ class PlaywrightWebBackend:
     ) -> None:
         _ = (automation_id, image, input)
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         )
         locator.fill(text)
 
@@ -141,7 +143,7 @@ class PlaywrightWebBackend:
     ) -> None:
         _ = (automation_id, image)
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         )
         locator.hover()
 
@@ -160,7 +162,7 @@ class PlaywrightWebBackend:
         text: str | None = None,
     ) -> None:
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         )
         timeout_ms = int(timeout_s * 1000)
         if until == "visible":
@@ -217,7 +219,7 @@ class PlaywrightWebBackend:
         y: float | None = None,
     ) -> str:
         return str(self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         ).inner_text())
 
     def is_visible(
@@ -232,7 +234,7 @@ class PlaywrightWebBackend:
         y: float | None = None,
     ) -> bool:
         return bool(self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         ).is_visible())
 
     def is_enabled(
@@ -247,7 +249,7 @@ class PlaywrightWebBackend:
         y: float | None = None,
     ) -> bool:
         return bool(self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y
+            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         ).is_enabled())
 
     def measure_navigation_ms(self) -> float:
@@ -287,7 +289,7 @@ class PlaywrightWebBackend:
             if name is not None:
                 kwargs["name"] = name
             # Role is a runtime string; Playwright stubs expect a Literal union.
-            return self._page.get_by_role(cast(Any, role), **kwargs)
+            return self._page.get_by_role(cast("Any", role), **kwargs)
         if css is not None:
             return self._page.locator(css)
         if xpath is not None:
@@ -360,7 +362,7 @@ class _CoordLocator:
                 return
             if time.monotonic() >= deadline:
                 raise TimeoutError(
-                    f"element at ({self._x:g}, {self._y:g}) did not become {state}"
+                    f"element at ({self._x:g}, {self._y:g}) did not become {state}",
                 )
             time.sleep(0.05)
 

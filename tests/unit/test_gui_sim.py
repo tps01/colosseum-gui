@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import colosseum as col
 import pytest
 from colosseum_gui.exceptions import GuiCapabilityError
 from colosseum_gui.visual.pngutil import read_png, solid_rgb, write_png
 from PIL import Image
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_web_sim_click_and_verify_visible(loaded) -> None:
@@ -32,7 +35,7 @@ def test_web_sim_navigate_and_screenshot(loaded) -> None:
 
 def test_web_sim_verify_text(loaded) -> None:
     result = col.gui.web.verify_text(
-        web_id=1, key="btn", expected="Start", role="button", name="Start"
+        web_id=1, key="btn", expected="Start", role="button", name="Start",
     )
     assert result.status == "PASS"
 
@@ -40,7 +43,7 @@ def test_web_sim_verify_text(loaded) -> None:
 def test_desktop_sim_uia_click(loaded) -> None:
     col.gui.desktop.click(desktop_id=1, automation_id="StartBtn")
     result = col.gui.desktop.verify_text(
-        desktop_id=1, key="start", expected="Running", automation_id="StartBtn"
+        desktop_id=1, key="start", expected="Running", automation_id="StartBtn",
     )
     assert result.status == "PASS"
 
@@ -133,8 +136,8 @@ def test_web_coord_locator_reads_dom_state() -> None:
                 "visible": True,
                 "enabled": False,
                 "text": "Launch",
-            }
-        ]
+            },
+        ],
     )
     locator = _CoordLocator(page, 10, 20)
 
@@ -151,7 +154,7 @@ def test_web_coord_locator_waits_for_filtered_text() -> None:
         [
             {"exists": True, "visible": True, "enabled": True, "text": "Loading"},
             {"exists": True, "visible": True, "enabled": True, "text": "Done"},
-        ]
+        ],
     )
 
     _CoordLocator(page, 5, 6).filter(has_text="Done").wait_for(state="visible", timeout=100)

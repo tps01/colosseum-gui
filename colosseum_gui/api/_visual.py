@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import json
+from contextlib import suppress
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from colosseum.context import get_context
 from colosseum.decorators import VerificationResult, missing_measurement_result
-from colosseum.output.artifacts import register_artifact, resolve_artifact_path
 
+from colosseum_gui._paths import resolve_artifact_path
 from colosseum_gui.visual import (
     contrast_ratio,
     pixel_diff_ratio,
@@ -22,23 +23,20 @@ def save_screenshot_artifact(
     backend: Any,  # noqa: ANN401
     *,
     path: str,
-    kind: str,
+    kind: str,  # noqa: ARG001
 ) -> Path:
-    artifact = cast(Path, resolve_artifact_path(path))
+    artifact = resolve_artifact_path(path)
     backend.capture_screenshot(path=artifact)
     meta = backend.capture_meta()
     meta_path = artifact.with_suffix(artifact.suffix + ".meta.json")
     meta_path.write_text(json.dumps(meta, indent=2, sort_keys=True), encoding="utf-8")
-    register_artifact(kind, artifact, description=f"{kind} screenshot")
-    register_artifact(f"{kind}_meta", meta_path, description=f"{kind} capture metadata")
     return artifact
 
 
-def save_tree_artifact(backend: Any, *, path: str, kind: str) -> Path:  # noqa: ANN401
-    artifact = cast(Path, resolve_artifact_path(path))
+def save_tree_artifact(backend: Any, *, path: str, kind: str) -> Path:  # noqa: ANN401, ARG001
+    artifact = resolve_artifact_path(path)
     tree = backend.capture_tree()
     artifact.write_text(json.dumps(tree, indent=2, sort_keys=True), encoding="utf-8")
-    register_artifact(kind, artifact, description=f"{kind} tree dump")
     return artifact
 
 
@@ -46,7 +44,7 @@ def resolve_shot(path: str) -> Path:
     candidate = Path(path)
     if candidate.is_file():
         return candidate
-    return cast(Path, resolve_artifact_path(path))
+    return resolve_artifact_path(path)
 
 
 def measure_contrast_ratio_from_path(
@@ -90,11 +88,8 @@ def verify_visual_paths(
     if ratio <= max_diff_ratio:
         return VerificationResult(status="PASS", message="", optional=optional, actual=ratio)
     diff_path = actual.with_name(actual.stem + "_diff.png")
-    try:
+    with suppress(Exception):
         write_diff_png(actual, base, diff_path)
-        register_artifact("gui_visual_diff", diff_path, description="visual regression diff")
-    except Exception:  # noqa: BLE001 - diff is best-effort
-        pass
     return VerificationResult(
         status="FAIL",
         message=f"diff ratio {ratio:.4f} exceeds max {max_diff_ratio}",

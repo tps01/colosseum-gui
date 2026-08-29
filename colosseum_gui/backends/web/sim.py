@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import time
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from colosseum_gui.capabilities import unsupported
 from colosseum_gui.visual.pngutil import solid_rgb, write_png
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class SimWebBackend:
@@ -143,7 +145,7 @@ class SimWebBackend:
                     "name": name,
                     "text": self._text_by_role.get((role, name), ""),
                     "enabled": (role, name) in self._enabled,
-                }
+                },
             )
         return {"url": self.url, "nodes": nodes}
 
