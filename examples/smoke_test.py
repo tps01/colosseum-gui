@@ -8,7 +8,7 @@ import colosseum as col
 
 
 def main() -> None:
-    config = Path(__file__).with_name("configs") / "bench.gui.sim.toml"
+    config = Path(__file__).with_name("configs") / "config.gui.sim.toml"
     col.config.load_config(str(config))
 
     col.gui.web.navigate(web_id=1, url="http://example.test/start")
