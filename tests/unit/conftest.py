@@ -30,8 +30,8 @@ def ctx(tmp_path: Path) -> Iterator[context_module.RuntimeContext]:
 
 
 @pytest.fixture
-def gui_bench(tmp_path: Path) -> Path:
-    path = tmp_path / "bench.toml"
+def gui_config(tmp_path: Path) -> Path:
+    path = tmp_path / "config.toml"
     path.write_text(
         """
 [[gui.web]]
@@ -50,6 +50,6 @@ title = "SimWindow"
 
 
 @pytest.fixture
-def loaded(ctx: context_module.RuntimeContext, gui_bench: Path) -> context_module.RuntimeContext:
-    load_config(str(gui_bench))
+def loaded(ctx: context_module.RuntimeContext, gui_config: Path) -> context_module.RuntimeContext:
+    load_config(str(gui_config))
     return ctx

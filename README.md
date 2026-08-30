@@ -13,6 +13,9 @@ pip install colosseum-gui
 playwright install chromium
 ```
 
+This requires `colosseum-core` 0.16.1+ and registers the `gui` namespace through
+the `colosseum.plugins` entry point.
+
 That single package install includes Playwright, desktop drivers (pywinauto on
 Windows; python-xlib on Linux; mss), and test/static tooling. On bare Ubuntu,
 also run `playwright install-deps` when using headed Chromium.
@@ -30,7 +33,7 @@ also run `playwright install-deps` when using headed Chromium.
 `driver=generic` on Linux is the X11 / X11-forwarded path. AT-SPI is not
 forwarded over `ssh -X`; use image or coordinates, not UIA-style locators.
 
-## Bench TOML
+## Config TOML
 
 ```toml
 [[gui.web]]
@@ -49,7 +52,7 @@ title = "Radio Control"
 ```python
 import colosseum as col
 
-col.config.load_config("bench.toml")
+col.config.load_config("examples/configs/config.gui.sim.toml")
 col.gui.web.navigate(web_id=1, url="http://dut/")
 col.gui.web.click(web_id=1, role="button", name="Start")
 col.gui.web.capture_screenshot(web_id=1, path="captures/after.png")
@@ -66,6 +69,13 @@ Driver-backed ops (for example `automation_id=` on desktop, or tree waits on
 web) raise `GuiCapabilityError` when the configured driver cannot perform them.
 Generic desktop click is best-effort and may miss on DPI or focus - same idea as
 generic SCPI on equipment.
+
+## Expected artifacts
+
+Normal CLI runs write `summary.json`, `summary.txt`, `execution.sqlite`, and
+`debug.log` under the run output directory. When metadata is loaded (see
+`examples/configs/metadata.yaml`), core also emits a WATS-format
+`wats_<datetime>_<script>.json` report alongside those files.
 
 ## Develop
 

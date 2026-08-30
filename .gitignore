@@ -67,8 +67,8 @@ Desktop.ini
 .env
 .env.*
 !.env.example
-**/bench.local.toml
-**/bench.*.local.toml
+**/config.local.toml
+**/config.*.local.toml
 
 scratchpad/
 wheelhouse/
