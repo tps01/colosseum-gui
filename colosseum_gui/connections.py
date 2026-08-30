@@ -7,7 +7,8 @@ from typing import Any, cast
 from colosseum.config.loader import ConfigError
 from colosseum.context import get_context
 from colosseum.logging import get_logger
-from colosseum.resource_cache import cached_resource, close_cached_resources
+
+from colosseum_gui._cache import cached_resource, close_cached_resources
 
 _logger = get_logger("colosseum.gui")
 
@@ -20,7 +21,7 @@ def get_config(kind: str, resource_id: int) -> dict[str, Any]:
     ctx = get_context()
     if ctx.config is None:
         raise ConfigError("Configuration is not loaded. Call col.config.load_config(path).")
-    return cast(dict[str, Any], ctx.config.require_item(f"gui.{kind}", resource_id))
+    return cast("dict[str, Any]", ctx.config.require_item(f"gui.{kind}", resource_id))
 
 
 def get_web(web_id: int) -> Any:  # noqa: ANN401
@@ -47,10 +48,10 @@ def _get_backend(kind: str, resource_id: int) -> Any:  # noqa: ANN401
         key,
         _open,
         on_reuse=lambda: _logger.debug(
-            "Reusing cached gui backend gui.%s id=%s", kind, resource_id
+            "Reusing cached gui backend gui.%s id=%s", kind, resource_id,
         ),
         on_open=lambda: _logger.debug(
-            "Opening gui backend gui.%s id=%s driver=%s", kind, resource_id, driver
+            "Opening gui backend gui.%s id=%s driver=%s", kind, resource_id, driver,
         ),
     )
 

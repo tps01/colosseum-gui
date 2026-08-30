@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import sys
 import time
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from colosseum_gui.capabilities import unsupported
 from colosseum_gui.exceptions import GuiConnectionError
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class PywinautoDesktopBackend:
@@ -32,7 +34,7 @@ class PywinautoDesktopBackend:
         except ImportError as exc:  # pragma: no cover
             raise GuiConnectionError(
                 "pywinauto is not installed; reinstall colosseum-gui on Windows "
-                "(pywinauto is a required dependency on win32)"
+                "(pywinauto is a required dependency on win32)",
             ) from exc
 
         self.desktop_id = desktop_id
@@ -53,7 +55,7 @@ class PywinautoDesktopBackend:
             self._app = Application(backend=backend).connect(title_re=f".*{self.title}.*")
         else:
             raise GuiConnectionError(
-                "pywinauto requires exe=, process_id=, or title= in [[gui.desktop]]"
+                "pywinauto requires exe=, process_id=, or title= in [[gui.desktop]]",
             )
         self._window = self._app.top_window()
         self._window.wait("ready", timeout=timeout_s)
@@ -202,7 +204,7 @@ class PywinautoDesktopBackend:
                         "control_type": str(getattr(ctrl.element_info, "control_type", "")),
                         "visible": bool(ctrl.is_visible()),
                         "enabled": bool(ctrl.is_enabled()),
-                    }
+                    },
                 )
             except Exception:  # noqa: BLE001
                 return

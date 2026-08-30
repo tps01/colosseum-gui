@@ -244,7 +244,7 @@ def capture_screenshot(*, desktop_id: int, path: str) -> None:
     :returns: None
     """
     _visual.save_screenshot_artifact(
-        get_desktop(desktop_id), path=path, kind="gui_desktop_screenshot"
+        get_desktop(desktop_id), path=path, kind="gui_desktop_screenshot",
     )
 
 
@@ -368,7 +368,7 @@ def verify_text(
     """
     _ = key
     actual = get_desktop(desktop_id).get_text(
-        role=role, name=name, automation_id=automation_id
+        role=role, name=name, automation_id=automation_id,
     )
     if actual == expected:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
@@ -406,7 +406,7 @@ def verify_visible(
     """
     _ = key
     actual = get_desktop(desktop_id).is_visible(
-        role=role, name=name, automation_id=automation_id
+        role=role, name=name, automation_id=automation_id,
     )
     if actual:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
@@ -444,7 +444,7 @@ def verify_enabled(
     """
     _ = key
     actual = get_desktop(desktop_id).is_enabled(
-        role=role, name=name, automation_id=automation_id
+        role=role, name=name, automation_id=automation_id,
     )
     if actual:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
