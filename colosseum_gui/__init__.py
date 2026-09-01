@@ -39,7 +39,6 @@ _CONFIG_SPECS = (
             "title",
             "exe",
             "process_id",
-            "uia_backend",
             "timeout_s",
             "dpi_scale",
             "display",

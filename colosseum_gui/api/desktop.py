@@ -39,7 +39,7 @@ def connect(*, desktop_id: int) -> None:
     :returns: None
 
     :raises GuiConnectionError: Desktop backend could not be opened.
-    :raises OSError: ``driver=pywinauto`` on a non-Windows host.
+    :raises OSError: ``driver=flaui`` on a non-Windows host.
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
     get_desktop(desktop_id)
@@ -60,17 +60,17 @@ def click(
     xpath: str | None = None,
     test_id: str | None = None,
 ) -> None:
-    """Click a control (generic: image/coords; pywinauto: AutomationId/Name).
+    """Click a control (generic: image/coords; flaui: UIA / XPath).
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
-    :param role: UIA control role/type (``driver=pywinauto`` / sim).
+    :param role: UIA control role/type (``driver=flaui`` / sim).
     :type role: str | None
-    :param name: Accessible name (``driver=pywinauto`` / sim).
+    :param name: Accessible name (``driver=flaui`` / sim).
     :type name: str | None
-    :param automation_id: UIA AutomationId (``driver=pywinauto`` / sim).
+    :param automation_id: UIA AutomationId (``driver=flaui`` / sim).
     :type automation_id: str | None
-    :param image: Template PNG path for best-effort image click (``generic`` / sim).
+    :param image: Template PNG path for image click (``generic`` / ``flaui`` / sim).
     :type image: str | None
     :param x: Screen or window X for coordinate click.
     :type x: float | None
@@ -80,7 +80,7 @@ def click(
     :type input: str | None
     :param css: Not supported on desktop (web-only); raises ``ValueError``.
     :type css: str | None
-    :param xpath: Not supported on desktop (web-only); raises ``ValueError``.
+    :param xpath: UIA XPath locator (``driver=flaui`` / sim).
     :type xpath: str | None
     :param test_id: Not supported on desktop (web-only); raises ``ValueError``.
     :type test_id: str | None
@@ -88,7 +88,7 @@ def click(
     :returns: None
 
     :raises GuiCapabilityError: Locator requires a different driver.
-    :raises ValueError: Web-only locators (css/xpath/test_id) were passed.
+    :raises ValueError: Web-only locators (css/test_id) were passed.
     """
     get_desktop(desktop_id).click(
         role=role,
@@ -116,6 +116,7 @@ def type_text(
     x: float | None = None,
     y: float | None = None,
     input: str | None = None,
+    xpath: str | None = None,
 ) -> None:
     """Type text into a desktop control or at a click target.
 
@@ -137,6 +138,7 @@ def type_text(
         x=x,
         y=y,
         input=input,
+        xpath=xpath,
     )
 
 
@@ -164,6 +166,7 @@ def hover(
     image: str | None = None,
     x: float | None = None,
     y: float | None = None,
+    xpath: str | None = None,
 ) -> None:
     """Move the pointer over a control or coordinate.
 
@@ -181,6 +184,7 @@ def hover(
         image=image,
         x=x,
         y=y,
+        xpath=xpath,
     )
 
 
@@ -194,8 +198,9 @@ def wait(
     name: str | None = None,
     automation_id: str | None = None,
     text: str | None = None,
+    xpath: str | None = None,
 ) -> None:
-    """Wait until a UIA condition holds (``driver=pywinauto`` / sim).
+    """Wait until a UIA condition holds (``driver=flaui`` / sim).
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
@@ -215,6 +220,7 @@ def wait(
         name=name,
         automation_id=automation_id,
         text=text,
+        xpath=xpath,
     )
 
 
@@ -250,7 +256,7 @@ def capture_screenshot(*, desktop_id: int, path: str) -> None:
 
 @command
 def capture_tree(*, desktop_id: int, path: str = "captures/desktop_tree.json") -> None:
-    """Dump window list (generic) or UIA tree (pywinauto) as JSON.
+    """Dump window list (generic) or UIA tree (flaui) as JSON.
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
@@ -348,9 +354,10 @@ def verify_text(
     role: str | None = None,
     name: str | None = None,
     automation_id: str | None = None,
+    xpath: str | None = None,
     optional: bool = False,
 ) -> VerificationResult:
-    """Verify control text equals ``expected`` (``pywinauto`` / sim).
+    """Verify control text equals ``expected`` (``flaui`` / sim).
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
@@ -368,7 +375,7 @@ def verify_text(
     """
     _ = key
     actual = get_desktop(desktop_id).get_text(
-        role=role, name=name, automation_id=automation_id,
+        role=role, name=name, automation_id=automation_id, xpath=xpath,
     )
     if actual == expected:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
@@ -388,9 +395,10 @@ def verify_visible(
     role: str | None = None,
     name: str | None = None,
     automation_id: str | None = None,
+    xpath: str | None = None,
     optional: bool = False,
 ) -> VerificationResult:
-    """Verify a control is visible (``pywinauto`` / sim).
+    """Verify a control is visible (``flaui`` / sim).
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
@@ -406,7 +414,7 @@ def verify_visible(
     """
     _ = key
     actual = get_desktop(desktop_id).is_visible(
-        role=role, name=name, automation_id=automation_id,
+        role=role, name=name, automation_id=automation_id, xpath=xpath,
     )
     if actual:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
@@ -426,9 +434,10 @@ def verify_enabled(
     role: str | None = None,
     name: str | None = None,
     automation_id: str | None = None,
+    xpath: str | None = None,
     optional: bool = False,
 ) -> VerificationResult:
-    """Verify a control is enabled (``pywinauto`` / sim).
+    """Verify a control is enabled (``flaui`` / sim).
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
@@ -444,7 +453,7 @@ def verify_enabled(
     """
     _ = key
     actual = get_desktop(desktop_id).is_enabled(
-        role=role, name=name, automation_id=automation_id,
+        role=role, name=name, automation_id=automation_id, xpath=xpath,
     )
     if actual:
         return VerificationResult(status="PASS", message="", optional=optional, actual=actual)

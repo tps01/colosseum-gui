@@ -75,7 +75,7 @@ def test_desktop_generic_rejects_uia_on_capability(tmp_path: Path, ctx) -> None:
     from colosseum_gui.capabilities import unsupported
 
     with pytest.raises(GuiCapabilityError):
-        unsupported("generic", "uia_locate", detail="needs pywinauto")
+        unsupported("generic", "uia_locate", detail="needs flaui")
 
 
 def test_visual_diff_pass_and_fail(tmp_path: Path) -> None:
@@ -177,20 +177,59 @@ def test_web_coord_locator_timeout_when_element_state_never_matches() -> None:
         locator.wait_for(state="visible", timeout=0)
 
 
-def test_pywinauto_close_only_kills_owned_app() -> None:
-    from colosseum_gui.backends.desktop.pywinauto_driver import PywinautoDesktopBackend
+def test_desktop_sim_xpath_click(loaded) -> None:
+    col.gui.desktop.click(
+        desktop_id=1,
+        xpath="//*[@AutomationId='StartBtn']",
+    )
+    result = col.gui.desktop.verify_text(
+        desktop_id=1,
+        key="start",
+        expected="Running",
+        xpath="//*[@AutomationId='StartBtn']",
+    )
+    assert result.status == "PASS"
 
-    owned = PywinautoDesktopBackend.__new__(PywinautoDesktopBackend)
+
+def test_find_template_prefers_best_match(tmp_path: Path) -> None:
+    from colosseum_gui.visual import find_template
+
+    hay = bytearray()
+    for _ in range(100):
+        hay.extend((0, 0, 0))
+    hay[33 * 3 : 33 * 3 + 3] = bytes((0, 180, 0))
+    needle = bytes((0, 180, 0))
+    hit = find_template(bytes(hay), 10, 10, needle, 1, 1, max_diff=8)
+    assert hit == (3, 3)
+
+
+def test_flaui_close_only_kills_owned_app() -> None:
+    from colosseum_gui.backends.desktop.flaui_driver import FlaUIDesktopBackend
+
+    owned = FlaUIDesktopBackend.__new__(FlaUIDesktopBackend)
     owned._owns_app = True
-    owned._app = _FakePywinautoApp()
+    owned._app = _FakeFlaUIApp()
     owned.close()
     assert owned._app.killed is True
 
-    attached = PywinautoDesktopBackend.__new__(PywinautoDesktopBackend)
+    attached = FlaUIDesktopBackend.__new__(FlaUIDesktopBackend)
     attached._owns_app = False
-    attached._app = _FakePywinautoApp()
+    attached._app = _FakeFlaUIApp()
     attached.close()
     assert attached._app.killed is False
+
+
+def test_vendor_flaui_dlls_present() -> None:
+    from importlib import resources
+    from pathlib import Path
+
+    root = Path(resources.files("colosseum_gui")).joinpath("vendor", "flaui")
+    for name in (
+        "FlaUI.Core.dll",
+        "FlaUI.UIA3.dll",
+        "Interop.UIAutomationClient.dll",
+    ):
+        assert root.joinpath(name).is_file(), name
 
 
 class _FakePage:
@@ -206,10 +245,9 @@ class _FakePage:
         return self._snapshots[index]
 
 
-class _FakePywinautoApp:
+class _FakeFlaUIApp:
     def __init__(self):
         self.killed = False
 
-    def kill(self, *, soft):
-        assert soft is False
+    def Kill(self):  # noqa: N802 - FlaUI API surface
         self.killed = True
