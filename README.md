@@ -34,8 +34,7 @@ Ubuntu, also run `playwright install-deps` when using headed Chromium.
 forwarded over `ssh -X`; use image or coordinates, not UIA-style locators.
 
 On Windows, `driver=flaui` is the default and combines UIA locators with
-screenshot and image matching in one backend. `driver=pywinauto` is accepted as a
-deprecated alias for `flaui`.
+screenshot and image matching in one backend.
 
 ## Config TOML
 

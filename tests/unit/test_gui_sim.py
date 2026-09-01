@@ -219,26 +219,6 @@ def test_flaui_close_only_kills_owned_app() -> None:
     assert attached._app.killed is False
 
 
-def test_pywinauto_alias_warns_and_maps_to_flaui(monkeypatch) -> None:
-    import warnings
-
-    import colosseum_gui.backends.desktop.flaui_driver as flaui_mod
-    from colosseum_gui.backends.desktop import factory
-
-    monkeypatch.setattr(factory.sys, "platform", "win32")
-
-    class _Backend:
-        driver_name = "flaui"
-
-    monkeypatch.setattr(flaui_mod, "FlaUIDesktopBackend", lambda **_kwargs: _Backend())
-
-    with warnings.catch_warnings(record=True) as issued:
-        warnings.simplefilter("always")
-        backend = factory.open_desktop_backend(1, {"driver": "pywinauto"})
-    assert any("pywinauto" in str(item.message) for item in issued)
-    assert backend.driver_name == "flaui"
-
-
 def test_vendor_flaui_dlls_present() -> None:
     from importlib import resources
     from pathlib import Path
