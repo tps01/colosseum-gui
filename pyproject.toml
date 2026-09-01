@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "colosseum-gui"
-version = "0.1.10"
+version = "0.2.0"
 description = "Colosseum product UI automation plugin (web and desktop)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 dependencies = [
   "colosseum-core>=0.16.1,<0.17",
   "playwright>=1.40,<2",
-  "pywinauto>=0.6.8,<0.7; sys_platform == 'win32'",
+  "pythonnet>=3.0,<4; sys_platform == 'win32'",
   "python-xlib>=0.33,<1; sys_platform == 'linux'",
   "mss>=9.0,<11",
   "pillow>=10,<12",
@@ -29,7 +29,7 @@ gui = "colosseum_gui:register"
 include = ["colosseum_gui*"]
 
 [tool.setuptools.package-data]
-colosseum_gui = ["py.typed"]
+colosseum_gui = ["py.typed", "vendor/flaui/*.dll", "vendor/flaui/FlaUI-LICENSE.txt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]
@@ -62,14 +62,21 @@ module = [
   "colosseum.*",
   "playwright",
   "playwright.*",
-  "pywinauto",
-  "pywinauto.*",
+  "clr",
+  "FlaUI.*",
   "Xlib",
   "Xlib.*",
   "mss",
   "mss.*",
   "PIL",
   "PIL.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "colosseum_gui.backends.desktop._flaui_bridge",
+  "colosseum_gui.backends.desktop.flaui_driver",
 ]
 ignore_missing_imports = true
 

@@ -80,7 +80,8 @@ class GenericDesktopBackend:
         unsupported(
             self.driver_name,
             "click",
-            detail="provide image= or x+y (UIA locators need driver=pywinauto)",
+            detail="provide image= or x+y (UIA locators need driver=flaui)",
+            backend=self,
         )
 
     def type_text(
@@ -161,7 +162,8 @@ class GenericDesktopBackend:
         unsupported(
             self.driver_name,
             "wait",
-            detail="tree waits require driver=pywinauto; use wait_stable",
+            detail="tree waits require driver=flaui; use wait_stable",
+            backend=self,
         )
 
     def wait_stable(self, *, timeout_s: float = 2.0) -> None:
@@ -183,7 +185,7 @@ class GenericDesktopBackend:
         return {
             "title": self.title,
             "windows": self._impl.list_windows(),
-            "note": "generic driver has no control tree; use driver=pywinauto on Windows",
+            "note": "generic driver has no control tree; use driver=flaui on Windows",
         }
 
     def get_text(
@@ -194,7 +196,7 @@ class GenericDesktopBackend:
         automation_id: str | None = None,
     ) -> str:
         _ = (role, name, automation_id)
-        unsupported(self.driver_name, "get_text", detail="requires driver=pywinauto")
+        unsupported(self.driver_name, "get_text", detail="requires driver=flaui", backend=self)
 
     def is_visible(
         self,
@@ -204,7 +206,7 @@ class GenericDesktopBackend:
         automation_id: str | None = None,
     ) -> bool:
         _ = (role, name, automation_id)
-        unsupported(self.driver_name, "is_visible", detail="requires driver=pywinauto")
+        unsupported(self.driver_name, "is_visible", detail="requires driver=flaui", backend=self)
 
     def is_enabled(
         self,
@@ -214,7 +216,7 @@ class GenericDesktopBackend:
         automation_id: str | None = None,
     ) -> bool:
         _ = (role, name, automation_id)
-        unsupported(self.driver_name, "is_enabled", detail="requires driver=pywinauto")
+        unsupported(self.driver_name, "is_enabled", detail="requires driver=flaui", backend=self)
 
     def capture_meta(self) -> dict[str, Any]:
         geom = self._impl.window_geometry()
@@ -258,13 +260,19 @@ class GenericDesktopBackend:
         css: str | None,
         xpath: str | None,
     ) -> None:
-        if css is not None or xpath is not None or test_id is not None:
-            raise ValueError("css/xpath/test_id are web-only; use col.gui.web")
+        if css is not None or test_id is not None:
+            raise ValueError("css/test_id are web-only; use col.gui.web")
+        if xpath is not None:
+            unsupported(
+                "generic",
+                "xpath",
+                detail="requires driver=flaui",
+            )
         if automation_id is not None or role is not None or name is not None:
             unsupported(
                 "generic",
                 "uia_locate",
-                detail="automation_id/role/name require driver=pywinauto",
+                detail="automation_id/role/name require driver=flaui",
             )
 
 
