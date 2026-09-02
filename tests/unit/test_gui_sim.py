@@ -40,6 +40,24 @@ def test_web_sim_verify_text(loaded) -> None:
     assert result.status == "PASS"
 
 
+def test_web_sim_select_option(loaded) -> None:
+    col.gui.web.select_option(web_id=1, test_id="widget-select", value="Sprocket-7")
+    result = col.gui.web.verify_text(
+        web_id=1, key="sku", expected="Sprocket-7", test_id="widget-select",
+    )
+    assert result.status == "PASS"
+
+
+def test_web_select_option_requires_one_choice(loaded) -> None:
+    from colosseum_gui.connections import get_web
+
+    backend = get_web(1)
+    with pytest.raises(ValueError, match="exactly one"):
+        backend.select_option(test_id="widget-select")
+    with pytest.raises(ValueError, match="exactly one"):
+        backend.select_option(test_id="widget-select", value="a", label="b")
+
+
 def test_desktop_sim_uia_click(loaded) -> None:
     col.gui.desktop.click(desktop_id=1, automation_id="StartBtn")
     result = col.gui.desktop.verify_text(
@@ -228,6 +246,7 @@ def test_vendor_flaui_dlls_present() -> None:
         "FlaUI.Core.dll",
         "FlaUI.UIA3.dll",
         "Interop.UIAutomationClient.dll",
+        "Microsoft.Win32.Registry.dll",
     ):
         assert root.joinpath(name).is_file(), name
 

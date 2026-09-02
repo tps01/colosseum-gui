@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Acme Widget Factory</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="css/site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#home" data-go="home">
+          <span class="brand-mark">Acme Widget Factory</span>
+          <span class="brand-tag">Est. 1974 · Bay 3</span>
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <button type="button" class="nav-btn" data-go="home" data-testid="nav-home">
+            Home
+          </button>
+          <button type="button" class="nav-btn" data-go="catalog" data-testid="nav-catalog">
+            Catalog
+          </button>
+          <button type="button" class="nav-btn" data-go="floor" data-testid="nav-floor">
+            Shop floor
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="panel" data-view="home">
+        <div class="hero">
+          <h1>Industrial widgets, shipped this afternoon.</h1>
+          <p class="lede">
+            Standard housings, custom lots, and same-day inspection from the
+            floor office. Start a line to draw a lot number from dispatch.
+          </p>
+          <div class="hero-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-testid="start-btn"
+              aria-controls="run-status"
+            >
+              Start production
+            </button>
+            <p
+              id="run-status"
+              class="status"
+              role="status"
+              aria-live="polite"
+              data-testid="run-status"
+              hidden
+            >
+              Idle
+            </p>
+            <p class="note" data-testid="lot-number" hidden></p>
+          </div>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <h2>Catalog</h2>
+            <p>Pick a SKU and queue it for the next shift.</p>
+          </article>
+          <article class="card">
+            <h2>Shop floor</h2>
+            <p>Inspect the last lot. Grading takes a couple of seconds.</p>
+          </article>
+          <article class="card">
+            <h2>Dispatch</h2>
+            <p>Lot numbers are assigned when the line actually starts.</p>
+          </article>
+        </div>
+        <details>
+          <summary data-testid="lead-times">Lead times and shipping</summary>
+          <p data-testid="lead-times-body">
+            Stock SKUs leave the dock the same day. Custom lots follow the
+            posted board in Bay 3. Carrier pickup is 16:30 on weekdays.
+          </p>
+        </details>
+      </section>
+
+      <section class="panel" data-view="catalog" hidden>
+        <h1>Catalog</h1>
+        <p>Choose a widget family, then queue it. Production still starts from Home.</p>
+        <div class="field">
+          <label for="widget-select">Widget family</label>
+          <select id="widget-select" data-testid="widget-select">
+            <option value="Gadget-100">Gadget 100 — housing</option>
+            <option value="Gizmo-X">Gizmo X — coupling</option>
+            <option value="Sprocket-7">Sprocket 7 — drive</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-secondary" id="queue-btn" data-testid="queue-btn">
+          Queue order
+        </button>
+        <p class="note" id="queue-note" data-testid="queue-note" hidden></p>
+      </section>
+
+      <section class="panel" data-view="floor" hidden>
+        <h1>Shop floor</h1>
+        <p>
+          Inspection talks to the floor PC. Expect a short wait, then a grade
+          from 1 to 10.
+        </p>
+        <p class="actions">
+          <button type="button" class="btn btn-primary" data-testid="inspect-btn">
+            Inspect last lot
+          </button>
+        </p>
+        <p
+          class="status"
+          role="status"
+          aria-live="polite"
+          data-testid="inspect-result"
+          hidden
+        ></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        Acme Widget Factory · 400 Mill Road · Floor office open 06:00–18:00
+      </div>
+    </footer>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

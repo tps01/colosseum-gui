@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Windows-only spike: launch Notepad and click via the FlaUI bridge."""
+"""Windows-only spike: launch inbox Notepad via the FlaUI bridge."""
 
 from __future__ import annotations
 
@@ -15,12 +15,12 @@ def main() -> int:
 
     backend = FlaUIDesktopBackend(
         desktop_id=99,
-        config={"exe": "notepad.exe", "timeout_s": 15.0},
+        config={"exe": "notepad.exe", "title": "Notepad", "timeout_s": 15.0},
     )
     try:
         tree = backend.capture_tree()
         print(f"captured tree with {len(tree.get('controls', []))} nodes")
-        backend.type_text(text="FlaUI spike", automation_id="15")
+        backend.type_text(text="FlaUI spike", role="edit", input="keys")
     finally:
         backend.close()
     print("ok")

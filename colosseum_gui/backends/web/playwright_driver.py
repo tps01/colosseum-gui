@@ -12,6 +12,24 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
+def _select_choice(
+    *,
+    value: str | None,
+    label: str | None,
+    index: int | None,
+) -> dict[str, str | int]:
+    choice: dict[str, str | int] = {}
+    if value is not None:
+        choice["value"] = value
+    if label is not None:
+        choice["label"] = label
+    if index is not None:
+        choice["index"] = index
+    if len(choice) != 1:
+        raise ValueError("provide exactly one of value, label, or index")
+    return choice
+
+
 class PlaywrightWebBackend:
     """Drive a browser page with Playwright (Linux and Windows)."""
 
@@ -124,6 +142,24 @@ class PlaywrightWebBackend:
             role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         )
         locator.fill(text)
+
+    def select_option(
+        self,
+        *,
+        value: str | None = None,
+        label: str | None = None,
+        index: int | None = None,
+        role: str | None = None,
+        name: str | None = None,
+        test_id: str | None = None,
+        css: str | None = None,
+        xpath: str | None = None,
+    ) -> None:
+        choice = _select_choice(value=value, label=label, index=index)
+        locator = self._locator(
+            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=None, y=None,
+        )
+        locator.select_option(**choice)
 
     def press_key(self, *, key: str) -> None:
         self._page.keyboard.press(key)
