@@ -34,12 +34,34 @@ def _download_nupkg(name: str, version: str, dest: Path) -> Path:
     return archive
 
 
+def _dll_rank(path: Path) -> int:
+    """Prefer Windows RID implementations; skip NuGet ref/ stubs."""
+    parts = {part.lower() for part in path.parts}
+    if "ref" in parts:
+        return 0
+    parent = path.parent.name.lower()
+    win_rid = "runtimes" in parts and "win" in parts
+    if win_rid and parent == "netstandard2.0":
+        return 5
+    if win_rid:
+        return 4
+    if parent in {"net48", "net472", "net461"} or "windows" in parent:
+        return 2
+    if parent == "netstandard2.0":
+        return 1
+    return 0
+
+
 def _extract_dll(archive: Path, work: Path) -> dict[str, Path]:
     with zipfile.ZipFile(archive) as zf:
         zf.extractall(work)
     found: dict[str, Path] = {}
     for path in work.rglob("*.dll"):
-        if path.parent.name == "netstandard2.0":
+        rank = _dll_rank(path)
+        if rank == 0:
+            continue
+        current = found.get(path.name)
+        if current is None or _dll_rank(current) < rank:
             found[path.name] = path
     return found
 

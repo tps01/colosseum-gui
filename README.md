@@ -25,7 +25,7 @@ Ubuntu, also run `playwright install-deps` when using headed Chromium.
 | Kind | Driver | Platforms | Notes |
 | --- | --- | --- | --- |
 | `gui.web` | `sim` | any | CI / unit tests |
-| `gui.web` | `playwright` | Linux, Windows | Role/CSS locators, nav timing |
+| `gui.web` | `playwright` | Linux, Windows | Role/CSS locators, `select_option`, nav timing |
 | `gui.desktop` | `sim` | any | CI / unit tests |
 | `gui.desktop` | `generic` | Linux, Windows | Screenshot, image/coord click |
 | `gui.desktop` | `flaui` | Windows only | UIA3 via pythonnet; XPath; image/coord |
@@ -33,8 +33,15 @@ Ubuntu, also run `playwright install-deps` when using headed Chromium.
 `driver=generic` on Linux is the X11 / X11-forwarded path. AT-SPI is not
 forwarded over `ssh -X`; use image or coordinates, not UIA-style locators.
 
-On Windows, `driver=flaui` is the default and combines UIA locators with
-screenshot and image matching in one backend.
+On Windows, `driver=flaui` is the default (UIA3, which FlaUI recommends for
+WPF and Store-style apps; classic Win32 still works). Screenshots use mss so
+pythonnet does not depend on `System.Drawing`. The bridge pins
+`PYTHONNET_RUNTIME=netfx` so a machine with the .NET SDK does not silently
+switch to CoreCLR.
+
+Do not use Calculator (FlaUI documents that `calc.exe` is the pre-Windows 8
+app only) or Task Manager (often elevated; UIA from a normal Python process
+cannot see it). Inbox Notepad is the portable target.
 
 ## Config TOML
 
@@ -58,6 +65,7 @@ import colosseum as col
 col.config.load_config("examples/configs/config.gui.sim.toml")
 col.gui.web.navigate(web_id=1, url="http://dut/")
 col.gui.web.click(web_id=1, role="button", name="Start")
+col.gui.web.select_option(web_id=1, test_id="sku", value="Sprocket-7")
 col.gui.web.capture_screenshot(web_id=1, path="captures/after.png")
 
 col.gui.desktop.click(desktop_id=1, image="goldens/start.png")
@@ -68,6 +76,39 @@ col.endex()
 
 Use `import colosseum as col`. Do not `from colosseum.gui import ...` (that is
 the core runner package).
+
+## Examples
+
+Sim smoke (no display, no browser):
+
+```bash
+colosseum run examples/smoke_test.py -g examples/configs/config.gui.sim.toml
+```
+
+Live webpage on localhost (serves the widget-factory site in
+``examples/test_webpage/``, Playwright):
+
+```bash
+playwright install chromium
+colosseum run examples/test_webpage.py -g examples/test_webpage/config.toml
+```
+
+Live inbox **Notepad** on Windows (FlaUI's own sample app; UIA3). No extra
+install beyond the plugin:
+
+```bash
+colosseum run examples/test_notepad.py
+```
+
+Live core runner UI as a **child** process (does not drive the window you
+launched the test from). Windows attaches by `process_id` (FlaUI). CustomTkinter
+does not expose native UIA button ids, so this example screenshots and dumps
+the tree rather than clicking. Prefer the Notepad example for a portable
+desktop smoke. Run from a terminal:
+
+```bash
+colosseum run examples/test_runner_gui.py
+```
 
 Driver-backed ops (for example `automation_id=` on desktop, or tree waits on
 web) raise `GuiCapabilityError` when the configured driver cannot perform them.

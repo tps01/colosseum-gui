@@ -80,6 +80,33 @@ class SimWebBackend:
         self._visible.add(key)
         self._enabled.add(key)
 
+    def select_option(
+        self,
+        *,
+        value: str | None = None,
+        label: str | None = None,
+        index: int | None = None,
+        role: str | None = None,
+        name: str | None = None,
+        test_id: str | None = None,
+        css: str | None = None,
+        xpath: str | None = None,
+    ) -> None:
+        choice: dict[str, str | int] = {}
+        if value is not None:
+            choice["value"] = value
+        if label is not None:
+            choice["label"] = label
+        if index is not None:
+            choice["index"] = index
+        if len(choice) != 1:
+            raise ValueError("provide exactly one of value, label, or index")
+        key = self._resolve_key(role=role, name=name, test_id=test_id, css=css, xpath=xpath)
+        selected = next(iter(choice.values()))
+        self._text_by_role[key] = str(selected)
+        self._visible.add(key)
+        self._enabled.add(key)
+
     def press_key(self, *, key: str) -> None:
         _ = key
 

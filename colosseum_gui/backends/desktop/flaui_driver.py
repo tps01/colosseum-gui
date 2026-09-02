@@ -53,8 +53,17 @@ class FlaUIDesktopBackend:
         if exe:
             self._app = Application.Launch(str(exe))
             self._owns_app = True
+            title_hint = self.title or Path(str(exe)).stem
+            self._window = self._wait_main_window(self._app, timeout_s=min(timeout_s, 5.0))
+            if self._window is None:
+                # Win11 notepad.exe is a stub that exits; the editor is another PID.
+                self._window = self._find_window_by_title(title_hint, timeout_s=timeout_s)
+                self._reattach_to_window_process(Application)
         elif process_id not in (None, ""):
             self._app = Application.Attach(int(str(process_id)))
+            self._window = self._wait_main_window(self._app, timeout_s=timeout_s)
+            if self._window is None:
+                raise GuiConnectionError("flaui could not obtain the application main window")
         elif self.title:
             self._app = None
             self._window = self._find_window_by_title(self.title, timeout_s=timeout_s)
@@ -62,9 +71,6 @@ class FlaUIDesktopBackend:
             raise GuiConnectionError(
                 "flaui requires exe=, process_id=, or title= in [[gui.desktop]]",
             )
-
-        if self._app is not None:
-            self._window = self._wait_main_window(self._app, timeout_s=timeout_s)
 
     def close(self) -> None:
         if self._owns_app and self._app is not None:
@@ -200,9 +206,9 @@ class FlaUIDesktopBackend:
                     name=name,
                     xpath=xpath,
                 )
-                if until == "visible" and element.IsOffscreen is False:
+                if until == "visible" and _element_is_visible(element):
                     return
-                if until == "enabled" and element.IsEnabled:
+                if until == "enabled" and _element_is_enabled(element):
                     return
                 if until == "text" and text is not None:
                     actual = self._element_text(element)
@@ -225,10 +231,20 @@ class FlaUIDesktopBackend:
             time.sleep(0.1)
 
     def capture_screenshot(self, *, path: Path) -> Path:
-        from FlaUI.Core.Capturing import Capture
+        from colosseum_gui.backends.desktop.generic import _mss_grab
 
+        rect = self._window.BoundingRectangle
         path.parent.mkdir(parents=True, exist_ok=True)
-        Capture.Element(self._window).ToFile(str(path))
+        path.write_bytes(
+            _mss_grab(
+                monitor={
+                    "left": int(rect.X),
+                    "top": int(rect.Y),
+                    "width": int(rect.Width),
+                    "height": int(rect.Height),
+                },
+            ),
+        )
         return path
 
     def capture_tree(self) -> dict[str, Any]:
@@ -242,8 +258,8 @@ class FlaUIDesktopBackend:
                         "name": str(element.Name or ""),
                         "automation_id": str(element.AutomationId or ""),
                         "control_type": str(element.ControlType),
-                        "visible": element.IsOffscreen is False,
-                        "enabled": bool(element.IsEnabled),
+                        "visible": _element_is_visible(element),
+                        "enabled": _element_is_enabled(element),
                     },
                 )
             except Exception:  # noqa: BLE001
@@ -287,7 +303,7 @@ class FlaUIDesktopBackend:
             name=name,
             xpath=xpath,
         )
-        return element.IsOffscreen is False
+        return _element_is_visible(element)
 
     def is_enabled(
         self,
@@ -297,13 +313,13 @@ class FlaUIDesktopBackend:
         automation_id: str | None = None,
         xpath: str | None = None,
     ) -> bool:
-        return bool(
+        return _element_is_enabled(
             self._find(
                 automation_id=automation_id,
                 role=role,
                 name=name,
                 xpath=xpath,
-            ).IsEnabled,
+            ),
         )
 
     def capture_meta(self) -> dict[str, Any]:
@@ -320,22 +336,26 @@ class FlaUIDesktopBackend:
         }
 
     def _wait_main_window(self, app: Any, *, timeout_s: float) -> Any:  # noqa: ANN401
-        deadline = time.monotonic() + timeout_s
-        while time.monotonic() < deadline:
-            window = app.GetMainWindow(self._automation)
-            if window is not None:
-                return window
-            time.sleep(0.1)
-        raise GuiConnectionError("flaui could not obtain the application main window")
+        from System import TimeSpan
+
+        try:
+            return app.GetMainWindow(self._automation, TimeSpan.FromSeconds(float(timeout_s)))
+        except Exception:  # noqa: BLE001 - stub launch PIDs die (Win11 Notepad)
+            return None
+
+    def _reattach_to_window_process(self, application_cls: Any) -> None:  # noqa: ANN401
+        pid = int(self._window.Properties.ProcessId.Value)
+        self._app = application_cls.Attach(pid)
 
     def _find_window_by_title(self, title: str, *, timeout_s: float) -> Any:  # noqa: ANN401
         deadline = time.monotonic() + timeout_s
+        needle = title.casefold()
         cf = self._automation.ConditionFactory
         while time.monotonic() < deadline:
             desktop = self._automation.GetDesktop()
             for window in desktop.FindAllChildren(cf.ByControlType(self._control_type.Window)):
                 name = str(window.Name or "")
-                if title in name:
+                if needle in name.casefold():
                     return window
             time.sleep(0.1)
         raise GuiConnectionError(f"flaui could not find a window matching title={title!r}")
@@ -362,7 +382,7 @@ class FlaUIDesktopBackend:
             name_cond = cf.ByName(name)
             condition = name_cond if condition is None else condition.And(name_cond)
         if role is not None:
-            role_cond = cf.ByControlType(_role_to_control_type(role, self._control_type))
+            role_cond = _role_condition(role, cf, self._control_type)
             condition = role_cond if condition is None else condition.And(role_cond)
         if condition is None:
             unsupported(
@@ -425,11 +445,35 @@ class FlaUIDesktopBackend:
             raise ValueError("css/test_id are web-only; use col.gui.web")
 
 
+def _element_is_visible(element: Any) -> bool:  # noqa: ANN401
+    try:
+        return element.IsOffscreen is False
+    except Exception:  # noqa: BLE001 - Win11 Notepad Document omits IsOffscreen
+        return True
+
+
+def _element_is_enabled(element: Any) -> bool:  # noqa: ANN401
+    try:
+        return bool(element.IsEnabled)
+    except Exception:  # noqa: BLE001
+        return True
+
+
+def _role_condition(role: str, condition_factory: Any, control_type: Any) -> Any:  # noqa: ANN401
+    # Win10 Notepad is Edit; Win11 Notepad (WinUI) is Document.
+    if role.lower() == "edit":
+        return condition_factory.ByControlType(control_type.Edit).Or(
+            condition_factory.ByControlType(control_type.Document),
+        )
+    return condition_factory.ByControlType(_role_to_control_type(role, control_type))
+
+
 def _role_to_control_type(role: str, control_type: Any) -> Any:  # noqa: ANN401
     mapping = {
         "button": control_type.Button,
         "text": control_type.Text,
         "edit": control_type.Edit,
+        "document": control_type.Document,
         "checkbox": control_type.CheckBox,
         "radio": control_type.RadioButton,
         "combobox": control_type.ComboBox,
