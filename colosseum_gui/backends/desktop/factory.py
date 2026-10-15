@@ -11,7 +11,7 @@ _GENERIC_ALIASES = frozenset({"generic", "x11", ""})
 
 
 def open_desktop_backend(desktop_id: int, config: dict[str, Any]) -> Any:  # noqa: ANN401
-    driver = str(config.get("driver") or "generic").lower()
+    driver = str(config.get("driver") or _default_driver()).lower()
     if driver == "sim":
         from colosseum_gui.backends.desktop.sim import SimDesktopBackend
 
@@ -20,10 +20,14 @@ def open_desktop_backend(desktop_id: int, config: dict[str, Any]) -> Any:  # noq
         from colosseum_gui.backends.desktop.generic import GenericDesktopBackend
 
         return GenericDesktopBackend(desktop_id=desktop_id, config=config)
-    if driver == "pywinauto":
+    if driver == "flaui":
         if not sys.platform.startswith("win"):
-            raise OSError("pywinauto is only available on Windows")
-        from colosseum_gui.backends.desktop.pywinauto_driver import PywinautoDesktopBackend
+            raise OSError("flaui is only available on Windows")
+        from colosseum_gui.backends.desktop.flaui_driver import FlaUIDesktopBackend
 
-        return PywinautoDesktopBackend(desktop_id=desktop_id, config=config)
+        return FlaUIDesktopBackend(desktop_id=desktop_id, config=config)
     raise GuiConnectionError(f"col.gui.desktop: unsupported driver `{driver}`")
+
+
+def _default_driver() -> str:
+    return "flaui" if sys.platform.startswith("win") else "generic"

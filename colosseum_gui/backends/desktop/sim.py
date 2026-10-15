@@ -36,6 +36,7 @@ class SimDesktopBackend:
             },
         }
         self._last_click: tuple[float, float] | None = None
+        self._last_key: str | None = None
 
     def close(self) -> None:
         return None
@@ -54,9 +55,14 @@ class SimDesktopBackend:
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        self._reject_web_locators(css=css, xpath=xpath, test_id=test_id)
-        if automation_id or role or name:
-            node = self._find_uia(automation_id=automation_id, role=role, name=name)
+        self._reject_web_locators(css=css, test_id=test_id)
+        if automation_id or role or name or xpath:
+            node = self._find_uia(
+                automation_id=automation_id,
+                role=role,
+                name=name,
+                xpath=xpath,
+            )
             _ = input
             if not node.get("enabled"):
                 raise RuntimeError(f"sim control not enabled: {node}")
@@ -90,16 +96,21 @@ class SimDesktopBackend:
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        self._reject_web_locators(css=css, xpath=xpath, test_id=test_id)
+        self._reject_web_locators(css=css, test_id=test_id)
         _ = (image, x, y, input)
-        if automation_id or role or name:
-            node = self._find_uia(automation_id=automation_id, role=role, name=name)
+        if automation_id or role or name or xpath:
+            node = self._find_uia(
+                automation_id=automation_id,
+                role=role,
+                name=name,
+                xpath=xpath,
+            )
             node["text"] = text
             return
         unsupported(self.driver_name, "type_text", detail="provide automation_id or role+name")
 
     def press_key(self, *, key: str) -> None:
-        _ = key
+        self._last_key = key
 
     def hover(
         self,
@@ -135,9 +146,15 @@ class SimDesktopBackend:
         name: str | None = None,
         automation_id: str | None = None,
         text: str | None = None,
+        xpath: str | None = None,
     ) -> None:
         _ = timeout_s
-        node = self._find_uia(automation_id=automation_id, role=role, name=name)
+        node = self._find_uia(
+            automation_id=automation_id,
+            role=role,
+            name=name,
+            xpath=xpath,
+        )
         if until == "visible" and not node.get("visible"):
             raise TimeoutError("sim control not visible")
         if until == "enabled" and not node.get("enabled"):
@@ -172,8 +189,14 @@ class SimDesktopBackend:
         role: str | None = None,
         name: str | None = None,
         automation_id: str | None = None,
+        xpath: str | None = None,
     ) -> str:
-        node = self._find_uia(automation_id=automation_id, role=role, name=name)
+        node = self._find_uia(
+            automation_id=automation_id,
+            role=role,
+            name=name,
+            xpath=xpath,
+        )
         return str(node.get("text", ""))
 
     def is_visible(
@@ -182,9 +205,15 @@ class SimDesktopBackend:
         role: str | None = None,
         name: str | None = None,
         automation_id: str | None = None,
+        xpath: str | None = None,
     ) -> bool:
         return bool(
-            self._find_uia(automation_id=automation_id, role=role, name=name).get("visible"),
+            self._find_uia(
+                automation_id=automation_id,
+                role=role,
+                name=name,
+                xpath=xpath,
+            ).get("visible"),
         )
 
     def is_enabled(
@@ -193,9 +222,15 @@ class SimDesktopBackend:
         role: str | None = None,
         name: str | None = None,
         automation_id: str | None = None,
+        xpath: str | None = None,
     ) -> bool:
         return bool(
-            self._find_uia(automation_id=automation_id, role=role, name=name).get("enabled"),
+            self._find_uia(
+                automation_id=automation_id,
+                role=role,
+                name=name,
+                xpath=xpath,
+            ).get("enabled"),
         )
 
     def capture_meta(self) -> dict[str, Any]:
@@ -207,6 +242,7 @@ class SimDesktopBackend:
             "height": self._height,
             "dpi_scale": float(self.config.get("dpi_scale") or 1.0),
             "last_click": self._last_click,
+            "last_key": self._last_key,
         }
 
     def render_button_template(self, path: Path) -> Path:
@@ -239,7 +275,12 @@ class SimDesktopBackend:
         automation_id: str | None,
         role: str | None,
         name: str | None,
+        xpath: str | None = None,
     ) -> dict[str, Any]:
+        if xpath is not None:
+            auto_id = _automation_id_from_xpath(xpath)
+            if auto_id is not None:
+                automation_id = auto_id
         if automation_id is not None:
             node = self._uia.get(automation_id)
             if node is None:
@@ -263,8 +304,16 @@ class SimDesktopBackend:
     def _reject_web_locators(
         *,
         css: str | None,
-        xpath: str | None,
         test_id: str | None,
     ) -> None:
-        if css is not None or xpath is not None or test_id is not None:
-            raise ValueError("css/xpath/test_id are web-only; use col.gui.web")
+        if css is not None or test_id is not None:
+            raise ValueError("css/test_id are web-only; use col.gui.web")
+
+
+def _automation_id_from_xpath(xpath: str) -> str | None:
+    marker = "@AutomationId='"
+    if marker not in xpath:
+        return None
+    start = xpath.index(marker) + len(marker)
+    end = xpath.index("'", start)
+    return xpath[start:end]

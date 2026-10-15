@@ -1,0 +1,6 @@
+[[gui.web]]
+web_id = 1
+driver = "playwright"
+browser = "chromium"
+headed = true
+timeout_s = 15

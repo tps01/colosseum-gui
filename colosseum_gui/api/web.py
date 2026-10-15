@@ -14,6 +14,7 @@ __all__ = [
     "navigate",
     "click",
     "type_text",
+    "select_option",
     "press_key",
     "hover",
     "wait",
@@ -171,6 +172,59 @@ def type_text(
         x=x,
         y=y,
         input=input,
+    )
+
+
+@command
+def select_option(
+    *,
+    web_id: int,
+    value: str | None = None,
+    label: str | None = None,
+    index: int | None = None,
+    role: str | None = None,
+    name: str | None = None,
+    test_id: str | None = None,
+    css: str | None = None,
+    xpath: str | None = None,
+) -> None:
+    """Select an option on a native ``<select>`` (Playwright ``select_option``).
+
+    Provide exactly one of ``value``, ``label``, or ``index``.
+
+    :param web_id: Configured ``gui.web`` id from bench TOML.
+    :type web_id: int
+    :param value: Option ``value`` attribute.
+    :type value: str | None
+    :param label: Visible option label.
+    :type label: str | None
+    :param index: Zero-based option index.
+    :type index: int | None
+    :param role: Accessible role.
+    :type role: str | None
+    :param name: Accessible name.
+    :type name: str | None
+    :param test_id: ``data-testid`` value.
+    :type test_id: str | None
+    :param css: CSS selector.
+    :type css: str | None
+    :param xpath: XPath selector.
+    :type xpath: str | None
+
+    :returns: None
+
+    :raises ValueError: None or more than one of ``value`` / ``label`` / ``index``.
+    :raises GuiCapabilityError: Operation not supported by the configured driver.
+    """
+    get_web(web_id).select_option(
+        value=value,
+        label=label,
+        index=index,
+        role=role,
+        name=name,
+        test_id=test_id,
+        css=css,
+        xpath=xpath,
     )
 
 

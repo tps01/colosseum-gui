@@ -37,7 +37,12 @@ jobs:
           python -m pip check
       - name: Smoke test installed runtime
         working-directory: colosseum-gui
-        run: python -I -c "import colosseum_gui, playwright, mss; print(colosseum_gui.__version__)"
+        shell: bash
+        run: |
+          python -I -c "import colosseum_gui, playwright, mss; print(colosseum_gui.__version__)"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            python -I -c "from importlib import resources; from pathlib import Path; p=Path(resources.files('colosseum_gui')).joinpath('vendor','flaui','FlaUI.Core.dll'); assert p.is_file(), p"
+          fi
       - name: Test
         working-directory: colosseum-gui
         run: python -m pytest -q

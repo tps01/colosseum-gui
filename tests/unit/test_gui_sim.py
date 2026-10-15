@@ -40,6 +40,24 @@ def test_web_sim_verify_text(loaded) -> None:
     assert result.status == "PASS"
 
 
+def test_web_sim_select_option(loaded) -> None:
+    col.gui.web.select_option(web_id=1, test_id="widget-select", value="Sprocket-7")
+    result = col.gui.web.verify_text(
+        web_id=1, key="sku", expected="Sprocket-7", test_id="widget-select",
+    )
+    assert result.status == "PASS"
+
+
+def test_web_select_option_requires_one_choice(loaded) -> None:
+    from colosseum_gui.connections import get_web
+
+    backend = get_web(1)
+    with pytest.raises(ValueError, match="exactly one"):
+        backend.select_option(test_id="widget-select")
+    with pytest.raises(ValueError, match="exactly one"):
+        backend.select_option(test_id="widget-select", value="a", label="b")
+
+
 def test_desktop_sim_uia_click(loaded) -> None:
     col.gui.desktop.click(desktop_id=1, automation_id="StartBtn")
     result = col.gui.desktop.verify_text(
@@ -75,7 +93,7 @@ def test_desktop_generic_rejects_uia_on_capability(tmp_path: Path, ctx) -> None:
     from colosseum_gui.capabilities import unsupported
 
     with pytest.raises(GuiCapabilityError):
-        unsupported("generic", "uia_locate", detail="needs pywinauto")
+        unsupported("generic", "uia_locate", detail="needs flaui")
 
 
 def test_visual_diff_pass_and_fail(tmp_path: Path) -> None:
@@ -177,20 +195,60 @@ def test_web_coord_locator_timeout_when_element_state_never_matches() -> None:
         locator.wait_for(state="visible", timeout=0)
 
 
-def test_pywinauto_close_only_kills_owned_app() -> None:
-    from colosseum_gui.backends.desktop.pywinauto_driver import PywinautoDesktopBackend
+def test_desktop_sim_xpath_click(loaded) -> None:
+    col.gui.desktop.click(
+        desktop_id=1,
+        xpath="//*[@AutomationId='StartBtn']",
+    )
+    result = col.gui.desktop.verify_text(
+        desktop_id=1,
+        key="start",
+        expected="Running",
+        xpath="//*[@AutomationId='StartBtn']",
+    )
+    assert result.status == "PASS"
 
-    owned = PywinautoDesktopBackend.__new__(PywinautoDesktopBackend)
+
+def test_find_template_prefers_best_match(tmp_path: Path) -> None:
+    from colosseum_gui.visual import find_template
+
+    hay = bytearray()
+    for _ in range(100):
+        hay.extend((0, 0, 0))
+    hay[33 * 3 : 33 * 3 + 3] = bytes((0, 180, 0))
+    needle = bytes((0, 180, 0))
+    hit = find_template(bytes(hay), 10, 10, needle, 1, 1, max_diff=8)
+    assert hit == (3, 3)
+
+
+def test_flaui_close_only_kills_owned_app() -> None:
+    from colosseum_gui.backends.desktop.flaui_driver import FlaUIDesktopBackend
+
+    owned = FlaUIDesktopBackend.__new__(FlaUIDesktopBackend)
     owned._owns_app = True
-    owned._app = _FakePywinautoApp()
+    owned._app = _FakeFlaUIApp()
     owned.close()
     assert owned._app.killed is True
 
-    attached = PywinautoDesktopBackend.__new__(PywinautoDesktopBackend)
+    attached = FlaUIDesktopBackend.__new__(FlaUIDesktopBackend)
     attached._owns_app = False
-    attached._app = _FakePywinautoApp()
+    attached._app = _FakeFlaUIApp()
     attached.close()
     assert attached._app.killed is False
+
+
+def test_vendor_flaui_dlls_present() -> None:
+    from importlib import resources
+    from pathlib import Path
+
+    root = Path(resources.files("colosseum_gui")).joinpath("vendor", "flaui")
+    for name in (
+        "FlaUI.Core.dll",
+        "FlaUI.UIA3.dll",
+        "Interop.UIAutomationClient.dll",
+        "Microsoft.Win32.Registry.dll",
+    ):
+        assert root.joinpath(name).is_file(), name
 
 
 class _FakePage:
@@ -206,10 +264,33 @@ class _FakePage:
         return self._snapshots[index]
 
 
-class _FakePywinautoApp:
+class _FakeFlaUIApp:
     def __init__(self):
         self.killed = False
 
-    def kill(self, *, soft):
-        assert soft is False
+    def Kill(self):  # noqa: N802 - FlaUI API surface
         self.killed = True
+
+
+def test_flaui_chord_virtual_key_names() -> None:
+    from colosseum_gui.backends.desktop.flaui_driver import _chord_virtual_key_names
+
+    assert _chord_virtual_key_names("ctrl+shift+p") == ["CONTROL", "SHIFT", "KEY_P"]
+    assert _chord_virtual_key_names("F5") == ["F5"]
+    assert _chord_virtual_key_names("enter") == ["ENTER"]
+
+
+def test_flaui_format_launch_args() -> None:
+    from colosseum_gui.backends.desktop.flaui_driver import _format_launch_args
+
+    assert _format_launch_args(None) is None
+    assert _format_launch_args("fixture --phrase X") == "fixture --phrase X"
+    assert _format_launch_args(["fixture", "--phrase", "zX9mQ2kP"]) is not None
+    assert "fixture" in (_format_launch_args(["fixture", "--phrase", "zX9mQ2kP"]) or "")
+
+
+def test_desktop_sim_press_key_records_chord(loaded) -> None:
+    from colosseum_gui.connections import get_desktop
+
+    col.gui.desktop.press_key(desktop_id=1, key="ctrl+shift+p")
+    assert get_desktop(1).capture_meta().get("last_key") == "ctrl+shift+p"

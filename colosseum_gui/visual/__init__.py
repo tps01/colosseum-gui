@@ -99,6 +99,33 @@ def contrast_ratio(fg: tuple[int, int, int], bg: tuple[int, int, int]) -> float:
     return (lighter + 0.05) / (darker + 0.05)
 
 
+def _patch_mean_abs_diff(
+    haystack_rgb: bytes,
+    hay_w: int,
+    needle_rgb: bytes,
+    needle_w: int,
+    needle_h: int,
+    *,
+    x: int,
+    y: int,
+) -> float:
+    total = 0
+    count = 0
+    for ny in range(needle_h):
+        hay_off = ((y + ny) * hay_w + x) * 3
+        needle_off = (ny * needle_w) * 3
+        for _nx in range(needle_w):
+            total += (
+                abs(haystack_rgb[hay_off] - needle_rgb[needle_off])
+                + abs(haystack_rgb[hay_off + 1] - needle_rgb[needle_off + 1])
+                + abs(haystack_rgb[hay_off + 2] - needle_rgb[needle_off + 2])
+            )
+            hay_off += 3
+            needle_off += 3
+            count += 3
+    return total / float(count) if count else 0.0
+
+
 def find_template(
     haystack_rgb: bytes,
     hay_w: int,
@@ -109,27 +136,23 @@ def find_template(
     *,
     max_diff: int = 8,
 ) -> tuple[int, int] | None:
-    """Return top-left ``(x, y)`` of first near-exact template match, or None."""
+    """Return top-left ``(x, y)`` of the best template match within ``max_diff``."""
     if needle_w > hay_w or needle_h > hay_h:
         return None
+    best: tuple[int, int] | None = None
+    best_score = float("inf")
     for y in range(hay_h - needle_h + 1):
         for x in range(hay_w - needle_w + 1):
-            matched = True
-            for ny in range(needle_h):
-                hay_off = ((y + ny) * hay_w + x) * 3
-                needle_off = (ny * needle_w) * 3
-                for nx in range(needle_w):
-                    hi = hay_off + nx * 3
-                    ni = needle_off + nx * 3
-                    if (
-                        abs(haystack_rgb[hi] - needle_rgb[ni]) > max_diff
-                        or abs(haystack_rgb[hi + 1] - needle_rgb[ni + 1]) > max_diff
-                        or abs(haystack_rgb[hi + 2] - needle_rgb[ni + 2]) > max_diff
-                    ):
-                        matched = False
-                        break
-                if not matched:
-                    break
-            if matched:
-                return x, y
-    return None
+            score = _patch_mean_abs_diff(
+                haystack_rgb,
+                hay_w,
+                needle_rgb,
+                needle_w,
+                needle_h,
+                x=x,
+                y=y,
+            )
+            if score <= max_diff and score < best_score:
+                best = (x, y)
+                best_score = score
+    return best

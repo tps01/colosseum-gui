@@ -10,7 +10,7 @@ the user explicitly requests it.
 
 - Registers the `gui` namespace → `col.gui.web.*` and `col.gui.desktop.*`
 - Web and desktop are separate kinds (like `speca` vs `oscope`)
-- Drivers implement each kind (`sim`, `playwright`, `generic`, `pywinauto`)
+- Drivers implement each kind (`sim`, `playwright`, `generic`, `flaui`)
 - Declares all runtime, driver, and test/static deps in main `dependencies`
   (one `pip install` / `pip install -e .`; see `RULES.md`)
 

@@ -1,4 +1,4 @@
-"""Desktop GUI backends (sim, generic, pywinauto)."""
+"""Desktop GUI backends (sim, generic, flaui)."""
 
 from colosseum_gui.backends.desktop.factory import open_desktop_backend
 
