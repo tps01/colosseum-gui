@@ -11,8 +11,11 @@ This is **not** OCR. The harness writes files; Colosseum waits for those files.
 - `colosseum-core`, `colosseum-gui` **0.2.3+** (`args=` + chord keys), `colosseum-shared` **0.3.5+**
 
 ```powershell
-pip install -e ../../colosseum-core -e ../.. -e ../../../colosseum-shared
-# From the colosseum-gui repo root, with siblings checked out beside it.
+# From the colosseum-gui repo (or any venv):
+pip install `
+  https://github.com/tps01/colosseum-core/releases/download/v0.16.2/colosseum_core-0.16.2-py3-none-any.whl `
+  https://github.com/tps01/colosseum-gui/releases/download/v0.2.3/colosseum_gui-0.2.3-py3-none-any.whl `
+  https://github.com/tps01/colosseum-shared/releases/download/v0.3.5/colosseum_shared-0.3.5-py3-none-any.whl
 ```
 
 ## Run
