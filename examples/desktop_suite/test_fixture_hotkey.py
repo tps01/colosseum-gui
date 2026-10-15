@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import colosseum as col
-
 from support import artifact_dir
 
 

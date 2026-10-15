@@ -13,10 +13,7 @@ HARNESS = SUITE_DIR / "harness.py"
 
 def artifact_dir() -> Path:
     raw = os.environ.get("COLOSSEUM_DESKTOP_SUITE_OUT")
-    if raw:
-        path = Path(raw)
-    else:
-        path = Path(tempfile.gettempdir()) / "colosseum_desktop_suite_out"
+    path = Path(raw) if raw else Path(tempfile.gettempdir()) / "colosseum_desktop_suite_out"
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -48,7 +45,7 @@ def write_gui_toml(path: Path) -> Path:
             'title = "DemoFixture"',
             "timeout_s = 30",
             "",
-        ]
+        ],
     )
     path.write_text(text, encoding="utf-8")
     return path

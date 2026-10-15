@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 
 import colosseum as col
-
 from support import artifact_dir, write_gui_toml
 
 
