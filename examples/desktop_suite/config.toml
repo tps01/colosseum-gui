@@ -1,0 +1,7 @@
+# Placeholder so `colosseum run-suite … -g config.toml` has a stable path before
+# setup_config.py writes the real FlaUI gui.toml and reloads it.
+
+[[gui.desktop]]
+desktop_id = 1
+driver = "sim"
+title = "placeholder"

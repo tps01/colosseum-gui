@@ -144,11 +144,11 @@ def type_text(
 
 @command
 def press_key(*, desktop_id: int, key: str) -> None:
-    """Press a key (best-effort OS input).
+    """Press and release a key or chord (best-effort OS input).
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
-    :param key: Key name (for example ``tab`` or ``enter``).
+    :param key: Key name or chord (for example ``tab``, ``enter``, or ``ctrl+shift+p``).
     :type key: str
 
     :returns: None

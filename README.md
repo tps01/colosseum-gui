@@ -55,6 +55,8 @@ url = "http://127.0.0.1:8080"
 desktop_id = 1
 driver = "sim"            # or generic | flaui
 title = "Radio Control"
+# exe = "C:/apps/tool.exe"
+# args = "fixture --phrase TOKEN --title Pane"   # or a string array
 ```
 
 ## Usage
@@ -70,12 +72,43 @@ col.gui.web.capture_screenshot(web_id=1, path="captures/after.png")
 
 col.gui.desktop.click(desktop_id=1, image="goldens/start.png")
 col.gui.desktop.click(desktop_id=1, xpath="//Button[@AutomationId='StartBtn']")
+col.gui.desktop.press_key(desktop_id=1, key="ctrl+shift+p")
 col.gui.desktop.capture_screenshot(desktop_id=1, path="captures/desk.png")
 col.endex()
 ```
 
 Use `import colosseum as col`. Do not `from colosseum.gui import ...` (that is
 the core runner package).
+
+## Desktop product suites
+
+`colosseum --gui` is the **operator** runner UI (core). `col.gui.desktop` drives
+the **product under test**. Do not confuse the two.
+
+For a real Windows `.exe` (or a small harness) with multiple windows:
+
+1. Keep a **placeholder** `-g` TOML in the suite so CLI has a path before setup.
+2. In suite setup, write a real `gui.toml` with absolute `exe` / `args` / `title`,
+   then `col.config.load_config(...)` again.
+3. Use one `[[gui.desktop]]` row per **windowed** process Colosseum should launch
+   and attach to (`driver = "flaui"`, launch `args=` supported in gui **0.2.3+**).
+4. Prove async product work with **side-effect files**
+   (`col.shared.verify.snapshot_files` / `verify_new_file` / `verify_no_new_file`),
+   not by re-implementing OCR inside Colosseum.
+5. **Background / windowless** processes (no UI to attach): start with
+   `subprocess`, keep the `Popen` handle, terminate in teardown. FlaUI
+   `close_all()` only kills apps this plugin launched as desktop sessions.
+6. Run on an **interactive** desktop session; leave fixture windows uncovered
+   (locked / remote sessions without a desktop will flake).
+
+Teaching suite (tiny Tk harness, multi-desktop, hotkey, file wait):
+
+```bash
+pip install -e ../colosseum-shared   # 0.3.5+ for verify_new_file
+colosseum run-suite examples/desktop_suite/suite.toml -g examples/desktop_suite/config.toml
+```
+
+See `examples/desktop_suite/README.md`.
 
 ## Examples
 

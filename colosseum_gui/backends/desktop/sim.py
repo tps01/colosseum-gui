@@ -36,6 +36,7 @@ class SimDesktopBackend:
             },
         }
         self._last_click: tuple[float, float] | None = None
+        self._last_key: str | None = None
 
     def close(self) -> None:
         return None
@@ -109,7 +110,7 @@ class SimDesktopBackend:
         unsupported(self.driver_name, "type_text", detail="provide automation_id or role+name")
 
     def press_key(self, *, key: str) -> None:
-        _ = key
+        self._last_key = key
 
     def hover(
         self,
@@ -241,6 +242,7 @@ class SimDesktopBackend:
             "height": self._height,
             "dpi_scale": float(self.config.get("dpi_scale") or 1.0),
             "last_click": self._last_click,
+            "last_key": self._last_key,
         }
 
     def render_button_template(self, path: Path) -> Path:

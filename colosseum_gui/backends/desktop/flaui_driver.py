@@ -51,7 +51,11 @@ class FlaUIDesktopBackend:
         self._automation = uia3_automation()
 
         if exe:
-            self._app = Application.Launch(str(exe))
+            launch_args = _format_launch_args(config.get("args"))
+            if launch_args:
+                self._app = Application.Launch(str(exe), launch_args)
+            else:
+                self._app = Application.Launch(str(exe))
             self._owns_app = True
             title_hint = self.title or Path(str(exe)).stem
             self._window = self._wait_main_window(self._app, timeout_s=min(timeout_s, 5.0))
@@ -147,14 +151,30 @@ class FlaUIDesktopBackend:
                 Keyboard.Type(text)
 
     def press_key(self, *, key: str) -> None:
+        """Press and release a key or chord (for example ``ctrl+shift+p``)."""
         from FlaUI.Core.Input import Keyboard
         from FlaUI.Core.WindowsAPI import VirtualKeyShort
 
-        vk = getattr(VirtualKeyShort, key.upper(), None)
-        if vk is None:
-            Keyboard.Type(key)
+        names = _chord_virtual_key_names(key)
+        if not names:
             return
-        Keyboard.Press(vk)
+
+        vks: list[Any] = []
+        for name in names:
+            vk = getattr(VirtualKeyShort, name, None)
+            if vk is None:
+                if len(names) == 1:
+                    Keyboard.Type(key)
+                    return
+                raise GuiConnectionError(
+                    f"flaui press_key cannot resolve VirtualKeyShort.{name} in chord {key!r}",
+                )
+            vks.append(vk)
+
+        for vk in vks:
+            Keyboard.Press(vk)
+        for vk in reversed(vks):
+            Keyboard.Release(vk)
 
     def hover(
         self,
@@ -488,3 +508,54 @@ def _role_to_control_type(role: str, control_type: Any) -> Any:  # noqa: ANN401
         "status": control_type.StatusBar,
     }
     return mapping.get(role.lower(), control_type.Custom)
+
+
+def _format_launch_args(raw: object) -> str | None:
+    """Normalize ``args`` from TOML (string or list) for ``Application.Launch``."""
+    if raw is None:
+        return None
+    if isinstance(raw, (list, tuple)):
+        parts = [str(p) for p in raw if str(p).strip()]
+        if not parts:
+            return None
+        import subprocess
+
+        return subprocess.list2cmdline(parts)
+    text = str(raw).strip()
+    return text or None
+
+
+_MODIFIER_VK = {
+    "CTRL": "CONTROL",
+    "CONTROL": "CONTROL",
+    "SHIFT": "SHIFT",
+    "ALT": "ALT",
+    "MENU": "ALT",
+    "WIN": "LWIN",
+    "WINDOWS": "LWIN",
+    "LWIN": "LWIN",
+    "RWIN": "RWIN",
+}
+
+
+def _chord_virtual_key_names(key: str) -> list[str]:
+    """Map ``ctrl+shift+p`` / ``F5`` to FlaUI ``VirtualKeyShort`` member names."""
+    text = key.strip()
+    if not text:
+        return []
+    parts = [p.strip() for p in text.replace("-", "+").split("+") if p.strip()]
+    names: list[str] = []
+    for part in parts:
+        upper = part.upper()
+        if upper in _MODIFIER_VK:
+            names.append(_MODIFIER_VK[upper])
+            continue
+        if upper.startswith("F") and upper[1:].isdigit():
+            names.append(upper)
+            continue
+        if len(upper) == 1 and upper.isalnum():
+            names.append(f"KEY_{upper}")
+            continue
+        # ENTER, TAB, ESCAPE, SPACE, …
+        names.append(upper)
+    return names

@@ -38,6 +38,7 @@ _CONFIG_SPECS = (
             "driver",
             "title",
             "exe",
+            "args",
             "process_id",
             "timeout_s",
             "dpi_scale",
