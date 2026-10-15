@@ -270,3 +270,27 @@ class _FakeFlaUIApp:
 
     def Kill(self):  # noqa: N802 - FlaUI API surface
         self.killed = True
+
+
+def test_flaui_chord_virtual_key_names() -> None:
+    from colosseum_gui.backends.desktop.flaui_driver import _chord_virtual_key_names
+
+    assert _chord_virtual_key_names("ctrl+shift+p") == ["CONTROL", "SHIFT", "KEY_P"]
+    assert _chord_virtual_key_names("F5") == ["F5"]
+    assert _chord_virtual_key_names("enter") == ["ENTER"]
+
+
+def test_flaui_format_launch_args() -> None:
+    from colosseum_gui.backends.desktop.flaui_driver import _format_launch_args
+
+    assert _format_launch_args(None) is None
+    assert _format_launch_args("fixture --phrase X") == "fixture --phrase X"
+    assert _format_launch_args(["fixture", "--phrase", "zX9mQ2kP"]) is not None
+    assert "fixture" in (_format_launch_args(["fixture", "--phrase", "zX9mQ2kP"]) or "")
+
+
+def test_desktop_sim_press_key_records_chord(loaded) -> None:
+    from colosseum_gui.connections import get_desktop
+
+    col.gui.desktop.press_key(desktop_id=1, key="ctrl+shift+p")
+    assert get_desktop(1).capture_meta().get("last_key") == "ctrl+shift+p"

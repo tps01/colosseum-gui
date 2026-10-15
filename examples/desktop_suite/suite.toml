@@ -1,0 +1,8 @@
+name = "desktop_suite"
+setup = ["setup_config.py"]
+tests = [
+  "test_settings_save.py",
+  "test_fixture_hotkey.py",
+]
+teardown = ["teardown_close.py"]
+fail_fast = true

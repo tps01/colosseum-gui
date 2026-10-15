@@ -354,11 +354,11 @@ class _WindowsDesktop(_OsDesktop):
             self._key_event(code, key_up=True)
 
     def press_key(self, key: str) -> None:
-        code = _VK_MAP.get(key.lower())
-        if code is None:
-            raise ValueError(f"unsupported key {key!r}")
-        self._key_event(code, key_up=False)
-        self._key_event(code, key_up=True)
+        codes = _resolve_vk_chord(key)
+        for code in codes:
+            self._key_event(code, key_up=False)
+        for code in reversed(codes):
+            self._key_event(code, key_up=True)
 
     def grab_png_bytes(self) -> bytes:
         return _mss_grab(monitor=self._monitor_region())
@@ -612,4 +612,33 @@ _VK_MAP = {
     "up": 0x26,
     "right": 0x27,
     "down": 0x28,
+    "ctrl": 0x11,
+    "control": 0x11,
+    "shift": 0x10,
+    "alt": 0x12,
+    "win": 0x5B,
+    "windows": 0x5B,
 }
+
+
+def _resolve_vk_chord(key: str) -> list[int]:
+    """Map ``ctrl+shift+p`` / ``tab`` to Win32 virtual-key codes."""
+    text = key.strip()
+    if not text:
+        raise ValueError("empty key")
+    parts = [p.strip().lower() for p in text.replace("-", "+").split("+") if p.strip()]
+    codes: list[int] = []
+    for part in parts:
+        if part in _VK_MAP:
+            codes.append(_VK_MAP[part])
+            continue
+        if part.startswith("f") and part[1:].isdigit():
+            n = int(part[1:])
+            if 1 <= n <= 24:
+                codes.append(0x70 + n - 1)
+                continue
+        if len(part) == 1 and part.isalnum():
+            codes.append(ord(part.upper()))
+            continue
+        raise ValueError(f"unsupported key {key!r}")
+    return codes
