@@ -1,16 +1,16 @@
 # Colosseum GUI
 
-First-party Colosseum plugin for **product UI automation** (`col.gui.web` /
-`col.gui.desktop`). This is not the core test-runner UI (`colosseum --gui`).
-
-Web and desktop are separate kinds, like `col.equipment.speca` vs
-`col.equipment.oscope`. Drivers implement each kind.
-
 ## Documentation
 
 HTML docs (GitHub Pages): https://tps01.github.io/colosseum-gui/
 
 Framework hub: https://tps01.github.io/colosseum-core/
+
+First-party Colosseum plugin for **product UI automation** (`col.gui.web` /
+`col.gui.desktop`). This is not the core test-runner UI (`colosseum --gui`).
+
+Web and desktop are separate kinds, like `col.equipment.speca` vs
+`col.equipment.oscope`. Drivers implement each kind.
 
 ## Install
 
