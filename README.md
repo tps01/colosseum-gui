@@ -1,5 +1,11 @@
 # Colosseum GUI
 
+## Documentation
+
+API reference (GitHub Pages): https://tps01.github.io/colosseum-gui/
+
+Framework hub: https://tps01.github.io/colosseum-core/
+
 First-party Colosseum plugin for **product UI automation** (`col.gui.web` /
 `col.gui.desktop`). This is not the core test-runner UI (`colosseum --gui`).
 
@@ -55,12 +61,12 @@ cannot see it). Inbox Notepad is the portable target.
 ## Config TOML
 
 ```toml
-[[gui.web]]
+[gui.web]
 web_id = 1
 driver = "sim"            # or playwright
 url = "http://127.0.0.1:8080"
 
-[[gui.desktop]]
+[gui.desktop]
 desktop_id = 1
 driver = "sim"            # or generic | flaui
 title = "Radio Control"
@@ -100,9 +106,10 @@ For a real Windows `.exe` (or a small harness) with multiple windows:
 2. In suite setup, write a real `gui.toml` with absolute `exe` / `args` / `title`,
    then `col.config.load_config(..., force=True)` again (CLI `-g` is pinned;
    without `force=True` the reload is ignored).
-3. Use one `[[gui.desktop]]` row per **windowed** process Colosseum should launch
+3. Use one `[gui.desktop]` row per **windowed** process Colosseum should launch
    and attach to (`driver = "flaui"`, launch `args=` supported in gui **0.2.3+** /
-   kind-honest locators in **0.3.0+**).
+   kind-honest locators in **0.3.0+**; use `[[gui.desktop]]` when the file has
+   more than one desktop row).
 4. Prove async product work with **side-effect files**
    (`col.shared.verify.snapshot_files` / `verify_new_file` / `verify_no_new_file`),
    not by re-implementing OCR inside Colosseum.

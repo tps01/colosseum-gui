@@ -28,7 +28,7 @@ def _write_config() -> Path:
     path.write_text(
         "\n".join(
             [
-                "[[gui.desktop]]",
+                "[gui.desktop]",
                 "desktop_id = 1",
                 'driver = "flaui"',
                 'exe = "notepad.exe"',
