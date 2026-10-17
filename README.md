@@ -2,7 +2,7 @@
 
 ## Documentation
 
-HTML docs (GitHub Pages): https://tps01.github.io/colosseum-gui/
+API reference (GitHub Pages): https://tps01.github.io/colosseum-gui/
 
 Framework hub: https://tps01.github.io/colosseum-core/
 
