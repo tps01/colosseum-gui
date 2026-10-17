@@ -362,7 +362,7 @@ class FlaUIDesktopBackend:
             return None, window, False
 
         raise GuiConnectionError(
-            "flaui requires exe=, process_id=, or title= in [[gui.desktop]]",
+            "flaui requires exe=, process_id=, or title= in [gui.desktop]",
         )
 
     def _wait_main_window(self, app: Any, *, timeout_s: float) -> Any:  # noqa: ANN401
