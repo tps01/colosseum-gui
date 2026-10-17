@@ -1,4 +1,4 @@
-[[gui.web]]
+[gui.web]
 web_id = 1
 driver = "playwright"
 browser = "chromium"
