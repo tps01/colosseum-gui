@@ -38,7 +38,7 @@ class GenericDesktopBackend:
             if not display:
                 raise OSError(
                     "generic desktop on Linux requires $DISPLAY "
-                    "(X11 or XWayland); set display= in [[gui.desktop]] or export DISPLAY",
+                    "(X11 or XWayland); set display= in [gui.desktop] or export DISPLAY",
                 )
             self._impl = _LinuxX11Desktop(title=self.title, display=display)
         else:

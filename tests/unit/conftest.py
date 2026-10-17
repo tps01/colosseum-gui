@@ -34,12 +34,12 @@ def gui_config(tmp_path: Path) -> Path:
     path = tmp_path / "config.toml"
     path.write_text(
         """
-[[gui.web]]
+[gui.web]
 web_id = 1
 driver = "sim"
 url = "http://example.test/"
 
-[[gui.desktop]]
+[gui.desktop]
 desktop_id = 1
 driver = "sim"
 title = "SimWindow"
