@@ -98,6 +98,61 @@ def verify_visual_paths(
     )
 
 
+def verify_text_equals(
+    backend: Any,  # noqa: ANN401
+    *,
+    expected: str,
+    optional: bool = False,
+    **locate: Any,  # noqa: ANN401
+) -> VerificationResult:
+    """Compare ``backend.get_text(**locate)`` to ``expected``."""
+    actual = backend.get_text(**locate)
+    if actual == expected:
+        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
+    return VerificationResult(
+        status="FAIL",
+        message=f"expected {expected!r}, got {actual!r}",
+        optional=optional,
+        actual=actual,
+    )
+
+
+def verify_is_visible(
+    backend: Any,  # noqa: ANN401
+    *,
+    optional: bool = False,
+    fail_message: str = "element is not visible",
+    **locate: Any,  # noqa: ANN401
+) -> VerificationResult:
+    actual = backend.is_visible(**locate)
+    if actual:
+        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
+    return VerificationResult(
+        status="FAIL",
+        message=fail_message,
+        optional=optional,
+        actual=actual,
+    )
+
+
+def verify_is_enabled(
+    backend: Any,  # noqa: ANN401
+    *,
+    optional: bool = False,
+    fail_message: str = "element is not enabled",
+    **locate: Any,  # noqa: ANN401
+) -> VerificationResult:
+    actual = backend.is_enabled(**locate)
+    if actual:
+        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
+    return VerificationResult(
+        status="FAIL",
+        message=fail_message,
+        optional=optional,
+        actual=actual,
+    )
+
+
 def verify_contrast_key(
     *,
     key: str,

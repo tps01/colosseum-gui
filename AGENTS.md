@@ -14,11 +14,22 @@ the user explicitly requests it.
 - Declares all runtime, driver, and test/static deps in main `dependencies`
   (one `pip install` / `pip install -e .`; see `RULES.md`)
 
-Core's `colosseum.gui` package is the optional **test-runner UI** (`colosseum
---gui`).
-Test scripts must use `import colosseum as col` and `col.gui.web` /
-`col.gui.desktop`,
-and must not `from colosseum.gui import ...`.
+**Naming:** Core's `colosseum.gui` package is the optional **operator /
+test-runner UI** (`colosseum --gui`). This plugin is the **product under test**
+API (`col.gui.*`). Scripts must `import colosseum as col` and use
+`col.gui.web` / `col.gui.desktop`; never `from colosseum.gui import ...`.
+
+**Desktop drivers:** Windows default `flaui` and desktop `sim` share the UIA
+surface. `generic` is image/coords/keys only (not a UIA stand-in). Locators are
+kind-honest — do not re-add web-only kwargs to desktop APIs or ignore
+desktop-only kwargs on web.
+
+**Shared helpers (do not copy into a new driver):**
+
+- `colosseum_gui/locators.py` — wrong-kind locator rejection
+- `backends/desktop/chords.py` — `press_key` chord grammar
+- `backends/web/select_choice.py` — native `<select>` choice validation
+- `api/_visual.py` — screenshot/tree/contrast/verify helpers
 
 ## Change discipline
 

@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import sys
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from colosseum_gui.exceptions import GuiConnectionError
+
+if TYPE_CHECKING:
+    from colosseum_gui.backends import DesktopBackend
 
 _GENERIC_ALIASES = frozenset({"generic", "x11", ""})
 
 
-def open_desktop_backend(desktop_id: int, config: dict[str, Any]) -> Any:  # noqa: ANN401
+def open_desktop_backend(desktop_id: int, config: dict[str, Any]) -> DesktopBackend:
     driver = str(config.get("driver") or _default_driver()).lower()
     if driver == "sim":
         from colosseum_gui.backends.desktop.sim import SimDesktopBackend

@@ -43,15 +43,13 @@ class SimWebBackend:
         role: str | None = None,
         name: str | None = None,
         test_id: str | None = None,
-        automation_id: str | None = None,
         css: str | None = None,
         xpath: str | None = None,
-        image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        _ = (automation_id, image, x, y, input)
+        _ = (x, y, input)
         key = self._resolve_key(role=role, name=name, test_id=test_id, css=css, xpath=xpath)
         if key not in self._visible:
             raise LookupError(f"sim web element not found: {key}")
@@ -66,15 +64,13 @@ class SimWebBackend:
         role: str | None = None,
         name: str | None = None,
         test_id: str | None = None,
-        automation_id: str | None = None,
         css: str | None = None,
         xpath: str | None = None,
-        image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        _ = (automation_id, image, x, y, input)
+        _ = (x, y, input)
         key = self._resolve_key(role=role, name=name, test_id=test_id, css=css, xpath=xpath)
         self._text_by_role[key] = text
         self._visible.add(key)
@@ -92,15 +88,9 @@ class SimWebBackend:
         css: str | None = None,
         xpath: str | None = None,
     ) -> None:
-        choice: dict[str, str | int] = {}
-        if value is not None:
-            choice["value"] = value
-        if label is not None:
-            choice["label"] = label
-        if index is not None:
-            choice["index"] = index
-        if len(choice) != 1:
-            raise ValueError("provide exactly one of value, label, or index")
+        from colosseum_gui.backends.web.select_choice import select_choice
+
+        choice = select_choice(value=value, label=label, index=index)
         key = self._resolve_key(role=role, name=name, test_id=test_id, css=css, xpath=xpath)
         selected = next(iter(choice.values()))
         self._text_by_role[key] = str(selected)
@@ -116,15 +106,13 @@ class SimWebBackend:
         role: str | None = None,
         name: str | None = None,
         test_id: str | None = None,
-        automation_id: str | None = None,
         css: str | None = None,
         xpath: str | None = None,
-        image: str | None = None,
         x: float | None = None,
         y: float | None = None,
     ) -> None:
+        _ = (x, y)
         self._resolve_key(role=role, name=name, test_id=test_id, css=css, xpath=xpath)
-        _ = (automation_id, image, x, y)
 
     def wait(
         self,

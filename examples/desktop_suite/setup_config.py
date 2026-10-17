@@ -19,7 +19,8 @@ def main() -> None:
         "colosseum_desktop_suite_gui.toml"
     )
     write_gui_toml(cfg)
-    col.config.load_config(str(cfg))
+    # force=True: replace the suite placeholder -g config with the generated file.
+    col.config.load_config(str(cfg), force=True)
 
 
 if __name__ == "__main__":

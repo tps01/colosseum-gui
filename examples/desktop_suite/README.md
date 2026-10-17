@@ -8,13 +8,13 @@ This is **not** OCR. The harness writes files; Colosseum waits for those files.
 ## Prerequisites
 
 - Windows interactive desktop (keep the harness windows uncovered)
-- `colosseum-core`, `colosseum-gui` **0.2.3+** (`args=` + chord keys), `colosseum-shared` **0.3.5+**
+- `colosseum-core` **0.16.4+**, `colosseum-gui` **0.3.0+** (`args=`, chords, kind-honest locators), `colosseum-shared` **0.3.5+**
 
 ```powershell
 # From the colosseum-gui repo (or any venv):
 pip install `
-  https://github.com/tps01/colosseum-core/releases/download/v0.16.2/colosseum_core-0.16.2-py3-none-any.whl `
-  https://github.com/tps01/colosseum-gui/releases/download/v0.2.3/colosseum_gui-0.2.3-py3-none-any.whl `
+  https://github.com/tps01/colosseum-core/releases/download/v0.16.4/colosseum_core-0.16.4-py3-none-any.whl `
+  https://github.com/tps01/colosseum-gui/releases/download/v0.3.0/colosseum_gui-0.3.0-py3-none-any.whl `
   https://github.com/tps01/colosseum-shared/releases/download/v0.3.5/colosseum_shared-0.3.5-py3-none-any.whl
 ```
 
@@ -29,7 +29,7 @@ colosseum run-suite examples/desktop_suite/suite.toml -g examples/desktop_suite/
 
 | Script | Pattern |
 | --- | --- |
-| `setup_config.py` | Placeholder `-g` file → rewrite absolute-path FlaUI TOML → `load_config` |
+| `setup_config.py` | Placeholder `-g` file → rewrite absolute-path FlaUI TOML → `load_config(..., force=True)` |
 | `test_settings_save.py` | Launch `args=` + `press_key` → `verify_new_file` |
 | `test_fixture_hotkey.py` | Auto capture file + chord `ctrl+shift+p` → another file |
 

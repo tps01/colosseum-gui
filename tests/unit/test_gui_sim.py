@@ -77,13 +77,30 @@ def test_desktop_sim_image_click(loaded, tmp_path: Path) -> None:
     assert meta.get("last_click") is not None
 
 
-def test_desktop_sim_rejects_web_locators(loaded) -> None:
-    # Assert the backend contract directly; @command records ERROR then re-raises
-    # (core) or may still swallow on older core — either way the sim must raise.
-    from colosseum_gui.connections import get_desktop
+def test_kind_locator_signatures(loaded) -> None:
+    """Public APIs omit wrong-kind locator kwargs (kind-honest surfaces)."""
+    import inspect
 
-    with pytest.raises(ValueError, match="web-only|css/xpath"):
-        get_desktop(1).click(css=".btn")
+    desk = inspect.signature(col.gui.desktop.click)
+    assert "css" not in desk.parameters
+    assert "test_id" not in desk.parameters
+    assert "automation_id" in desk.parameters
+
+    web = inspect.signature(col.gui.web.click)
+    assert "automation_id" not in web.parameters
+    assert "image" not in web.parameters
+    assert "css" in web.parameters
+
+
+def test_locator_reject_helpers() -> None:
+    from colosseum_gui.locators import reject_desktop_locators, reject_web_locators
+
+    reject_web_locators()
+    reject_desktop_locators()
+    with pytest.raises(ValueError, match="web-only"):
+        reject_web_locators(css=".btn")
+    with pytest.raises(ValueError, match="desktop-only"):
+        reject_desktop_locators(automation_id="StartBtn")
 
 
 def test_desktop_generic_rejects_uia_on_capability(tmp_path: Path, ctx) -> None:
@@ -272,12 +289,20 @@ class _FakeFlaUIApp:
         self.killed = True
 
 
-def test_flaui_chord_virtual_key_names() -> None:
-    from colosseum_gui.backends.desktop.flaui_driver import _chord_virtual_key_names
+def test_parse_chord_and_adapters() -> None:
+    from colosseum_gui.backends.desktop.chords import (
+        format_chord,
+        parse_chord,
+        to_flaui_virtual_key_names,
+        to_win32_vk_codes,
+    )
 
-    assert _chord_virtual_key_names("ctrl+shift+p") == ["CONTROL", "SHIFT", "KEY_P"]
-    assert _chord_virtual_key_names("F5") == ["F5"]
-    assert _chord_virtual_key_names("enter") == ["ENTER"]
+    tokens = parse_chord("ctrl+shift+p")
+    assert to_flaui_virtual_key_names(tokens) == ["CONTROL", "SHIFT", "KEY_P"]
+    assert to_win32_vk_codes(tokens) == [0x11, 0x10, ord("P")]
+    assert format_chord(tokens) == "ctrl+shift+p"
+    assert to_flaui_virtual_key_names(parse_chord("F5")) == ["F5"]
+    assert to_flaui_virtual_key_names(parse_chord("enter")) == ["ENTER"]
 
 
 def test_flaui_format_launch_args() -> None:

@@ -19,7 +19,7 @@ pip install colosseum-gui
 playwright install chromium
 ```
 
-This requires `colosseum-core` 0.16.1+ and registers the `gui` namespace through
+This requires `colosseum-core` 0.16.4+ and registers the `gui` namespace through
 the `colosseum.plugins` entry point.
 
 That single package install includes Playwright, desktop drivers (FlaUI + bundled
@@ -30,11 +30,20 @@ Ubuntu, also run `playwright install-deps` when using headed Chromium.
 
 | Kind | Driver | Platforms | Notes |
 | --- | --- | --- | --- |
-| `gui.web` | `sim` | any | CI / unit tests |
-| `gui.web` | `playwright` | Linux, Windows | Role/CSS locators, `select_option`, nav timing |
-| `gui.desktop` | `sim` | any | CI / unit tests |
-| `gui.desktop` | `generic` | Linux, Windows | Screenshot, image/coord click |
-| `gui.desktop` | `flaui` | Windows only | UIA3 via pythonnet; XPath; image/coord |
+| `gui.web` | `sim` | any | CI / unit tests (web locators only) |
+| `gui.web` | `playwright` | Linux, Windows | Role/CSS/`test_id`; `select_option`; nav timing |
+| `gui.desktop` | `sim` | any | CI stand-in for the **UIA** desktop surface |
+| `gui.desktop` | `flaui` | Windows (default) | UIA3: `automation_id` / role / XPath; image/coord |
+| `gui.desktop` | `generic` | Linux, Windows | Image / coordinates / keys only — **not** UIA |
+
+Locators are kind-honest: `col.gui.web` does not take `automation_id`;
+`col.gui.desktop` does not take `css` / `test_id`. Use the matching namespace.
+
+**Desktop capability:** treat FlaUI (and desktop `sim`) as the UIA contract —
+`verify_text` / `verify_visible` / `verify_enabled` / tree `wait` need that path.
+`driver=generic` is the image/coords/keys fallback (Linux X11 / XWayland, or when
+you are not using UIA). It raises `GuiCapabilityError` for UIA-only calls; do not
+write suites against `sim` and expect them to run on `generic` without changes.
 
 `driver=generic` on Linux is the X11 / X11-forwarded path. AT-SPI is not
 forwarded over `ssh -X`; use image or coordinates, not UIA-style locators.
@@ -95,9 +104,12 @@ For a real Windows `.exe` (or a small harness) with multiple windows:
 
 1. Keep a **placeholder** `-g` TOML in the suite so CLI has a path before setup.
 2. In suite setup, write a real `gui.toml` with absolute `exe` / `args` / `title`,
-   then `col.config.load_config(...)` again.
+   then `col.config.load_config(..., force=True)` again (CLI `-g` is pinned;
+   without `force=True` the reload is ignored).
 3. Use one `[gui.desktop]` row per **windowed** process Colosseum should launch
-   and attach to (`driver = "flaui"`, launch `args=` supported in gui **0.2.3+**).
+   and attach to (`driver = "flaui"`, launch `args=` supported in gui **0.2.3+** /
+   kind-honest locators in **0.3.0+**; use `[[gui.desktop]]` when the file has
+   more than one desktop row).
 4. Prove async product work with **side-effect files**
    (`col.shared.verify.snapshot_files` / `verify_new_file` / `verify_no_new_file`),
    not by re-implementing OCR inside Colosseum.
