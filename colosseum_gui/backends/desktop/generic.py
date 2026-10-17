@@ -510,10 +510,7 @@ class _LinuxX11Desktop(_OsDesktop):
     def list_windows(self) -> list[dict[str, Any]]:
         windows: list[dict[str, Any]] = []
         for win in self._root.query_tree().children:
-            try:
-                name = win.get_wm_name()
-            except Exception:  # noqa: BLE001
-                continue
+            name = _x11_window_name(win)
             if not name:
                 continue
             geom = win.get_geometry()
@@ -561,11 +558,8 @@ class _LinuxX11Desktop(_OsDesktop):
 
     def _find_window(self, title: str) -> Any:  # noqa: ANN401
         for win in self._root.query_tree().children:
-            try:
-                name = win.get_wm_name()
-            except Exception:  # noqa: BLE001
-                continue
-            if name and title.lower() in str(name).lower():
+            name = _x11_window_name(win)
+            if name and title.lower() in name.lower():
                 return win
         raise GuiConnectionError(f"window title not found: {title!r}")
 
@@ -589,5 +583,17 @@ def _mss_grab(*, monitor: dict[str, int]) -> bytes:
         if png is None:
             raise GuiConnectionError("mss failed to encode PNG screenshot")
         return bytes(png)
+
+
+def _x11_window_name(win: Any) -> str | None:  # noqa: ANN401
+    from Xlib.error import XError
+
+    try:
+        name = win.get_wm_name()
+    except XError:
+        return None
+    if not name:
+        return None
+    return str(name)
 
 

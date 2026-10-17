@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+import os
 import tempfile
 import time
 from pathlib import Path
 from typing import Any
+
+from colosseum.logging import get_logger
 
 from colosseum_gui.backends.desktop._flaui_bridge import setup_flaui_bridge, uia3_automation
 from colosseum_gui.capabilities import unsupported
 from colosseum_gui.exceptions import GuiConnectionError
 from colosseum_gui.visual import find_template
 from colosseum_gui.visual.pngutil import read_png
+
+_logger = get_logger("colosseum.gui.desktop")
 
 
 class FlaUIDesktopBackend:
@@ -203,8 +208,8 @@ class FlaUIDesktopBackend:
                     actual = self._element_text(element)
                     if actual == text:
                         return
-            except Exception:  # noqa: BLE001
-                pass
+            except Exception as exc:  # noqa: BLE001
+                _logger.debug("desktop wait poll failed: %s", exc)
             time.sleep(0.1)
         raise TimeoutError(f"wait until={until!r} timed out")
 
@@ -519,10 +524,40 @@ def _format_launch_args(raw: object) -> str | None:
         parts = [str(p) for p in raw if str(p).strip()]
         if not parts:
             return None
-        import subprocess
-
-        return subprocess.list2cmdline(parts)
+        return _quote_windows_command(parts)
     text = str(raw).strip()
     return text or None
+
+
+def _quote_windows_command(args: list[str]) -> str:
+    """Quote argv the way the MS C runtime parses a command line."""
+    result: list[str] = []
+    for arg in args:
+        text = os.fsdecode(arg)
+        if result:
+            result.append(" ")
+        need_quote = (" " in text) or ("\t" in text) or not text
+        if need_quote:
+            result.append('"')
+        slashes: list[str] = []
+        for char in text:
+            if char == "\\":
+                slashes.append(char)
+                continue
+            if char == '"':
+                result.append("\\" * (len(slashes) * 2))
+                slashes = []
+                result.append('\\"')
+                continue
+            if slashes:
+                result.extend(slashes)
+                slashes = []
+            result.append(char)
+        if slashes:
+            result.extend(slashes)
+        if need_quote:
+            result.extend(slashes)
+            result.append('"')
+    return "".join(result)
 
 
