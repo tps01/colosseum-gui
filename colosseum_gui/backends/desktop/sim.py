@@ -46,16 +46,13 @@ class SimDesktopBackend:
         *,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        self._reject_web_locators(css=css, test_id=test_id)
         if automation_id or role or name or xpath:
             node = self._find_uia(
                 automation_id=automation_id,
@@ -87,16 +84,13 @@ class SimDesktopBackend:
         text: str,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        self._reject_web_locators(css=css, test_id=test_id)
         _ = (image, x, y, input)
         if automation_id or role or name or xpath:
             node = self._find_uia(
@@ -110,16 +104,17 @@ class SimDesktopBackend:
         unsupported(self.driver_name, "type_text", detail="provide automation_id or role+name")
 
     def press_key(self, *, key: str) -> None:
-        self._last_key = key
+        from colosseum_gui.backends.desktop.chords import format_chord, parse_chord
+
+        tokens = parse_chord(key)
+        self._last_key = format_chord(tokens) if tokens else key
 
     def hover(
         self,
         *,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
@@ -128,9 +123,7 @@ class SimDesktopBackend:
         self.click(
             role=role,
             name=name,
-            test_id=test_id,
             automation_id=automation_id,
-            css=css,
             xpath=xpath,
             image=image,
             x=x,
@@ -299,15 +292,6 @@ class SimDesktopBackend:
             detail="provide automation_id or role+name",
         )
         raise AssertionError("unreachable")
-
-    @staticmethod
-    def _reject_web_locators(
-        *,
-        css: str | None,
-        test_id: str | None,
-    ) -> None:
-        if css is not None or test_id is not None:
-            raise ValueError("css/test_id are web-only; use col.gui.web")
 
 
 def _automation_id_from_xpath(xpath: str) -> str | None:

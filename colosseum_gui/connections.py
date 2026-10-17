@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from colosseum.config.loader import ConfigError
 from colosseum.context import get_context
 from colosseum.logging import get_logger
 
 from colosseum_gui._cache import cached_resource, close_cached_resources
+
+if TYPE_CHECKING:
+    from colosseum_gui.backends import DesktopBackend, WebBackend
 
 _logger = get_logger("colosseum.gui")
 
@@ -24,12 +27,12 @@ def get_config(kind: str, resource_id: int) -> dict[str, Any]:
     return cast("dict[str, Any]", ctx.config.require_item(f"gui.{kind}", resource_id))
 
 
-def get_web(web_id: int) -> Any:  # noqa: ANN401
-    return _get_backend("web", web_id)
+def get_web(web_id: int) -> WebBackend:
+    return cast("WebBackend", _get_backend("web", web_id))
 
 
-def get_desktop(desktop_id: int) -> Any:  # noqa: ANN401
-    return _get_backend("desktop", desktop_id)
+def get_desktop(desktop_id: int) -> DesktopBackend:
+    return cast("DesktopBackend", _get_backend("desktop", desktop_id))
 
 
 def _get_backend(kind: str, resource_id: int) -> Any:  # noqa: ANN401

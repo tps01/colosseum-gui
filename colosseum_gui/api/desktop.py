@@ -56,9 +56,7 @@ def click(
     x: float | None = None,
     y: float | None = None,
     input: str | None = None,
-    css: str | None = None,
     xpath: str | None = None,
-    test_id: str | None = None,
 ) -> None:
     """Click a control (generic: image/coords; flaui: UIA / XPath).
 
@@ -78,17 +76,12 @@ def click(
     :type y: float | None
     :param input: ``invoke`` (UIA default) or ``mouse``.
     :type input: str | None
-    :param css: Not supported on desktop (web-only); raises ``ValueError``.
-    :type css: str | None
     :param xpath: UIA XPath locator (``driver=flaui`` / sim).
     :type xpath: str | None
-    :param test_id: Not supported on desktop (web-only); raises ``ValueError``.
-    :type test_id: str | None
 
     :returns: None
 
     :raises GuiCapabilityError: Locator requires a different driver.
-    :raises ValueError: Web-only locators (css/test_id) were passed.
     """
     get_desktop(desktop_id).click(
         role=role,
@@ -98,9 +91,7 @@ def click(
         x=x,
         y=y,
         input=input,
-        css=css,
         xpath=xpath,
-        test_id=test_id,
     )
 
 
@@ -374,16 +365,14 @@ def verify_text(
     :raises GuiCapabilityError: Unsupported on ``driver=generic``.
     """
     _ = key
-    actual = get_desktop(desktop_id).get_text(
-        role=role, name=name, automation_id=automation_id, xpath=xpath,
-    )
-    if actual == expected:
-        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
-    return VerificationResult(
-        status="FAIL",
-        message=f"expected {expected!r}, got {actual!r}",
+    return _visual.verify_text_equals(
+        get_desktop(desktop_id),
+        expected=expected,
         optional=optional,
-        actual=actual,
+        role=role,
+        name=name,
+        automation_id=automation_id,
+        xpath=xpath,
     )
 
 
@@ -413,16 +402,14 @@ def verify_visible(
     :raises GuiCapabilityError: Unsupported on ``driver=generic``.
     """
     _ = key
-    actual = get_desktop(desktop_id).is_visible(
-        role=role, name=name, automation_id=automation_id, xpath=xpath,
-    )
-    if actual:
-        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
-    return VerificationResult(
-        status="FAIL",
-        message="control is not visible",
+    return _visual.verify_is_visible(
+        get_desktop(desktop_id),
         optional=optional,
-        actual=actual,
+        fail_message="control is not visible",
+        role=role,
+        name=name,
+        automation_id=automation_id,
+        xpath=xpath,
     )
 
 
@@ -452,16 +439,14 @@ def verify_enabled(
     :raises GuiCapabilityError: Unsupported on ``driver=generic``.
     """
     _ = key
-    actual = get_desktop(desktop_id).is_enabled(
-        role=role, name=name, automation_id=automation_id, xpath=xpath,
-    )
-    if actual:
-        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
-    return VerificationResult(
-        status="FAIL",
-        message="control is not enabled",
+    return _visual.verify_is_enabled(
+        get_desktop(desktop_id),
         optional=optional,
-        actual=actual,
+        fail_message="control is not enabled",
+        role=role,
+        name=name,
+        automation_id=automation_id,
+        xpath=xpath,
     )
 
 

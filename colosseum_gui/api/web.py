@@ -72,7 +72,6 @@ def click(
     test_id: str | None = None,
     css: str | None = None,
     xpath: str | None = None,
-    image: str | None = None,
     x: float | None = None,
     y: float | None = None,
     input: str | None = None,
@@ -91,8 +90,6 @@ def click(
     :type css: str | None
     :param xpath: XPath selector.
     :type xpath: str | None
-    :param image: Unused on web (desktop generic); reserved.
-    :type image: str | None
     :param x: Page X for coordinate click.
     :type x: float | None
     :param y: Page Y for coordinate click.
@@ -110,7 +107,6 @@ def click(
         test_id=test_id,
         css=css,
         xpath=xpath,
-        image=image,
         x=x,
         y=y,
         input=input,
@@ -127,7 +123,6 @@ def type_text(
     test_id: str | None = None,
     css: str | None = None,
     xpath: str | None = None,
-    image: str | None = None,
     x: float | None = None,
     y: float | None = None,
     input: str | None = None,
@@ -148,8 +143,6 @@ def type_text(
     :type css: str | None
     :param xpath: XPath selector.
     :type xpath: str | None
-    :param image: Unused on web.
-    :type image: str | None
     :param x: Page X for coordinate focus.
     :type x: float | None
     :param y: Page Y for coordinate focus.
@@ -168,7 +161,6 @@ def type_text(
         test_id=test_id,
         css=css,
         xpath=xpath,
-        image=image,
         x=x,
         y=y,
         input=input,
@@ -251,7 +243,6 @@ def hover(
     test_id: str | None = None,
     css: str | None = None,
     xpath: str | None = None,
-    image: str | None = None,
     x: float | None = None,
     y: float | None = None,
 ) -> None:
@@ -270,7 +261,6 @@ def hover(
         test_id=test_id,
         css=css,
         xpath=xpath,
-        image=image,
         x=x,
         y=y,
     )
@@ -483,16 +473,17 @@ def verify_text(
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
     _ = key
-    actual = get_web(web_id).get_text(
-        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
-    )
-    if actual == expected:
-        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
-    return VerificationResult(
-        status="FAIL",
-        message=f"expected {expected!r}, got {actual!r}",
+    return _visual.verify_text_equals(
+        get_web(web_id),
+        expected=expected,
         optional=optional,
-        actual=actual,
+        role=role,
+        name=name,
+        test_id=test_id,
+        css=css,
+        xpath=xpath,
+        x=x,
+        y=y,
     )
 
 
@@ -523,16 +514,16 @@ def verify_visible(
     :rtype: VerificationResult
     """
     _ = key
-    actual = get_web(web_id).is_visible(
-        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
-    )
-    if actual:
-        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
-    return VerificationResult(
-        status="FAIL",
-        message="element is not visible",
+    return _visual.verify_is_visible(
+        get_web(web_id),
         optional=optional,
-        actual=actual,
+        role=role,
+        name=name,
+        test_id=test_id,
+        css=css,
+        xpath=xpath,
+        x=x,
+        y=y,
     )
 
 
@@ -563,16 +554,16 @@ def verify_enabled(
     :rtype: VerificationResult
     """
     _ = key
-    actual = get_web(web_id).is_enabled(
-        role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
-    )
-    if actual:
-        return VerificationResult(status="PASS", message="", optional=optional, actual=actual)
-    return VerificationResult(
-        status="FAIL",
-        message="element is not enabled",
+    return _visual.verify_is_enabled(
+        get_web(web_id),
         optional=optional,
-        actual=actual,
+        role=role,
+        name=name,
+        test_id=test_id,
+        css=css,
+        xpath=xpath,
+        x=x,
+        y=y,
     )
 
 

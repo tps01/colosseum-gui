@@ -52,21 +52,17 @@ class GenericDesktopBackend:
         *,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        self._reject_web_and_uia(
+        self._reject_uia(
             role=role,
             name=name,
-            test_id=test_id,
             automation_id=automation_id,
-            css=css,
             xpath=xpath,
         )
         _ = input  # generic is always mouse
@@ -90,21 +86,17 @@ class GenericDesktopBackend:
         text: str,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        self._reject_web_and_uia(
+        self._reject_uia(
             role=role,
             name=name,
-            test_id=test_id,
             automation_id=automation_id,
-            css=css,
             xpath=xpath,
         )
         _ = input
@@ -123,20 +115,16 @@ class GenericDesktopBackend:
         *,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
         y: float | None = None,
     ) -> None:
-        self._reject_web_and_uia(
+        self._reject_uia(
             role=role,
             name=name,
-            test_id=test_id,
             automation_id=automation_id,
-            css=css,
             xpath=xpath,
         )
         if image is not None:
@@ -157,8 +145,9 @@ class GenericDesktopBackend:
         name: str | None = None,
         automation_id: str | None = None,
         text: str | None = None,
+        xpath: str | None = None,
     ) -> None:
-        _ = (until, timeout_s, role, name, automation_id, text)
+        _ = (until, timeout_s, role, name, automation_id, text, xpath)
         unsupported(
             self.driver_name,
             "wait",
@@ -194,8 +183,9 @@ class GenericDesktopBackend:
         role: str | None = None,
         name: str | None = None,
         automation_id: str | None = None,
+        xpath: str | None = None,
     ) -> str:
-        _ = (role, name, automation_id)
+        _ = (role, name, automation_id, xpath)
         unsupported(self.driver_name, "get_text", detail="requires driver=flaui", backend=self)
 
     def is_visible(
@@ -204,8 +194,9 @@ class GenericDesktopBackend:
         role: str | None = None,
         name: str | None = None,
         automation_id: str | None = None,
+        xpath: str | None = None,
     ) -> bool:
-        _ = (role, name, automation_id)
+        _ = (role, name, automation_id, xpath)
         unsupported(self.driver_name, "is_visible", detail="requires driver=flaui", backend=self)
 
     def is_enabled(
@@ -214,8 +205,9 @@ class GenericDesktopBackend:
         role: str | None = None,
         name: str | None = None,
         automation_id: str | None = None,
+        xpath: str | None = None,
     ) -> bool:
-        _ = (role, name, automation_id)
+        _ = (role, name, automation_id, xpath)
         unsupported(self.driver_name, "is_enabled", detail="requires driver=flaui", backend=self)
 
     def capture_meta(self) -> dict[str, Any]:
@@ -251,17 +243,13 @@ class GenericDesktopBackend:
         return origin[0] + hit[0] + nw / 2.0, origin[1] + hit[1] + nh / 2.0
 
     @staticmethod
-    def _reject_web_and_uia(
+    def _reject_uia(
         *,
         role: str | None,
         name: str | None,
-        test_id: str | None,
         automation_id: str | None,
-        css: str | None,
         xpath: str | None,
     ) -> None:
-        if css is not None or test_id is not None:
-            raise ValueError("css/test_id are web-only; use col.gui.web")
         if xpath is not None:
             unsupported(
                 "generic",
@@ -354,7 +342,9 @@ class _WindowsDesktop(_OsDesktop):
             self._key_event(code, key_up=True)
 
     def press_key(self, key: str) -> None:
-        codes = _resolve_vk_chord(key)
+        from colosseum_gui.backends.desktop.chords import parse_chord, to_win32_vk_codes
+
+        codes = to_win32_vk_codes(parse_chord(key))
         for code in codes:
             self._key_event(code, key_up=False)
         for code in reversed(codes):
@@ -601,44 +591,3 @@ def _mss_grab(*, monitor: dict[str, int]) -> bytes:
         return bytes(png)
 
 
-_VK_MAP = {
-    "tab": 0x09,
-    "enter": 0x0D,
-    "return": 0x0D,
-    "escape": 0x1B,
-    "esc": 0x1B,
-    "space": 0x20,
-    "left": 0x25,
-    "up": 0x26,
-    "right": 0x27,
-    "down": 0x28,
-    "ctrl": 0x11,
-    "control": 0x11,
-    "shift": 0x10,
-    "alt": 0x12,
-    "win": 0x5B,
-    "windows": 0x5B,
-}
-
-
-def _resolve_vk_chord(key: str) -> list[int]:
-    """Map ``ctrl+shift+p`` / ``tab`` to Win32 virtual-key codes."""
-    text = key.strip()
-    if not text:
-        raise ValueError("empty key")
-    parts = [p.strip().lower() for p in text.replace("-", "+").split("+") if p.strip()]
-    codes: list[int] = []
-    for part in parts:
-        if part in _VK_MAP:
-            codes.append(_VK_MAP[part])
-            continue
-        if part.startswith("f") and part[1:].isdigit():
-            n = int(part[1:])
-            if 1 <= n <= 24:
-                codes.append(0x70 + n - 1)
-                continue
-        if len(part) == 1 and part.isalnum():
-            codes.append(ord(part.upper()))
-            continue
-        raise ValueError(f"unsupported key {key!r}")
-    return codes
