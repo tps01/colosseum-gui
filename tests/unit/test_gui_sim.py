@@ -306,12 +306,21 @@ def test_parse_chord_and_adapters() -> None:
 
 
 def test_flaui_format_launch_args() -> None:
+    import subprocess
+
     from colosseum_gui.backends.desktop.flaui_driver import _format_launch_args
 
     assert _format_launch_args(None) is None
     assert _format_launch_args("fixture --phrase X") == "fixture --phrase X"
-    assert _format_launch_args(["fixture", "--phrase", "zX9mQ2kP"]) is not None
-    assert "fixture" in (_format_launch_args(["fixture", "--phrase", "zX9mQ2kP"]) or "")
+    argv = [
+        "fixture",
+        "--phrase",
+        "spaced launch phrase",
+        "--title",
+        "Pa List Args",
+        "--easy",
+    ]
+    assert _format_launch_args(argv) == subprocess.list2cmdline(argv)
 
 
 def test_desktop_sim_press_key_records_chord(loaded) -> None:
