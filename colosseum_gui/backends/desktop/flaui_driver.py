@@ -73,7 +73,7 @@ class FlaUIDesktopBackend:
             self._window = self._find_window_by_title(self.title, timeout_s=timeout_s)
         else:
             raise GuiConnectionError(
-                "flaui requires exe=, process_id=, or title= in [[gui.desktop]]",
+                "flaui requires exe=, process_id=, or title= in [gui.desktop]",
             )
 
     def close(self) -> None:

@@ -39,7 +39,7 @@ def _write_desktop_config(process_id: int) -> Path:
     path.write_text(
         "\n".join(
             [
-                "[[gui.desktop]]",
+                "[gui.desktop]",
                 "desktop_id = 1",
                 f'driver = "{driver}"',
                 'title = "Colosseum"',
