@@ -1,4 +1,4 @@
-"""Visual regression and WCAG contrast helpers (stdlib PNG)."""
+"""Visual regression and WCAG contrast helpers (Pillow via ``pngutil``)."""
 
 from __future__ import annotations
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 import tempfile
 import time
 from pathlib import Path
@@ -29,8 +28,7 @@ class FlaUIDesktopBackend:
     _automation: Any
 
     def __init__(self, *, desktop_id: int, config: dict[str, Any]) -> None:
-        if not sys.platform.startswith("win"):
-            raise OSError("flaui is only available on Windows")
+        # OS gate lives in backends.desktop.factory.open_desktop_backend.
         try:
             setup_flaui_bridge()
             from FlaUI.Core import Application
@@ -44,37 +42,12 @@ class FlaUIDesktopBackend:
         self.desktop_id = desktop_id
         self.config = dict(config)
         self.title = str(config.get("title") or "")
-        timeout_s = float(config.get("timeout_s") or 10.0)
-        exe = config.get("exe")
-        process_id = config.get("process_id")
-        self._owns_app = False
         self._automation = uia3_automation()
-
-        if exe:
-            launch_args = _format_launch_args(config.get("args"))
-            if launch_args:
-                self._app = Application.Launch(str(exe), launch_args)
-            else:
-                self._app = Application.Launch(str(exe))
-            self._owns_app = True
-            title_hint = self.title or Path(str(exe)).stem
-            self._window = self._wait_main_window(self._app, timeout_s=min(timeout_s, 5.0))
-            if self._window is None:
-                # Win11 notepad.exe is a stub that exits; the editor is another PID.
-                self._window = self._find_window_by_title(title_hint, timeout_s=timeout_s)
-                self._reattach_to_window_process(Application)
-        elif process_id not in (None, ""):
-            self._app = Application.Attach(int(str(process_id)))
-            self._window = self._wait_main_window(self._app, timeout_s=timeout_s)
-            if self._window is None:
-                raise GuiConnectionError("flaui could not obtain the application main window")
-        elif self.title:
-            self._app = None
-            self._window = self._find_window_by_title(self.title, timeout_s=timeout_s)
-        else:
-            raise GuiConnectionError(
-                "flaui requires exe=, process_id=, or title= in [[gui.desktop]]",
-            )
+        self._app, self._window, self._owns_app = self._attach_or_launch(
+            Application,
+            config=self.config,
+            title=self.title,
+        )
 
     def close(self) -> None:
         if self._owns_app and self._app is not None:
@@ -85,16 +58,13 @@ class FlaUIDesktopBackend:
         *,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        self._reject_web(css=css, test_id=test_id)
         if image is not None:
             ax, ay = self._locate_image(image)
             self._click_coords(ax, ay)
@@ -119,16 +89,13 @@ class FlaUIDesktopBackend:
         text: str,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        self._reject_web(css=css, test_id=test_id)
         _ = (image, x, y)
         element = self._find(
             automation_id=automation_id,
@@ -155,7 +122,12 @@ class FlaUIDesktopBackend:
         from FlaUI.Core.Input import Keyboard
         from FlaUI.Core.WindowsAPI import VirtualKeyShort
 
-        names = _chord_virtual_key_names(key)
+        from colosseum_gui.backends.desktop.chords import (
+            parse_chord,
+            to_flaui_virtual_key_names,
+        )
+
+        names = to_flaui_virtual_key_names(parse_chord(key))
         if not names:
             return
 
@@ -181,15 +153,12 @@ class FlaUIDesktopBackend:
         *,
         role: str | None = None,
         name: str | None = None,
-        test_id: str | None = None,
         automation_id: str | None = None,
-        css: str | None = None,
         xpath: str | None = None,
         image: str | None = None,
         x: float | None = None,
         y: float | None = None,
     ) -> None:
-        self._reject_web(css=css, test_id=test_id)
         if image is not None:
             ax, ay = self._locate_image(image)
             self._move_coords(ax, ay)
@@ -355,6 +324,47 @@ class FlaUIDesktopBackend:
             "dpi_scale": float(self.config.get("dpi_scale") or 1.0),
         }
 
+    def _attach_or_launch(
+        self,
+        application_cls: Any,  # noqa: ANN401
+        *,
+        config: dict[str, Any],
+        title: str,
+    ) -> tuple[Any, Any, bool]:
+        """Launch, attach by PID, or find by title; reattach after stub-PID exits."""
+        timeout_s = float(config.get("timeout_s") or 10.0)
+        exe = config.get("exe")
+        process_id = config.get("process_id")
+
+        if exe:
+            launch_args = _format_launch_args(config.get("args"))
+            if launch_args:
+                app = application_cls.Launch(str(exe), launch_args)
+            else:
+                app = application_cls.Launch(str(exe))
+            title_hint = title or Path(str(exe)).stem
+            window = self._wait_main_window(app, timeout_s=min(timeout_s, 5.0))
+            if window is None:
+                # Win11 notepad.exe is a stub that exits; the editor is another PID.
+                window = self._find_window_by_title(title_hint, timeout_s=timeout_s)
+                app = application_cls.Attach(int(window.Properties.ProcessId.Value))
+            return app, window, True
+
+        if process_id not in (None, ""):
+            app = application_cls.Attach(int(str(process_id)))
+            window = self._wait_main_window(app, timeout_s=timeout_s)
+            if window is None:
+                raise GuiConnectionError("flaui could not obtain the application main window")
+            return app, window, False
+
+        if title:
+            window = self._find_window_by_title(title, timeout_s=timeout_s)
+            return None, window, False
+
+        raise GuiConnectionError(
+            "flaui requires exe=, process_id=, or title= in [[gui.desktop]]",
+        )
+
     def _wait_main_window(self, app: Any, *, timeout_s: float) -> Any:  # noqa: ANN401
         from System import TimeSpan
 
@@ -362,10 +372,6 @@ class FlaUIDesktopBackend:
             return app.GetMainWindow(self._automation, TimeSpan.FromSeconds(float(timeout_s)))
         except Exception:  # noqa: BLE001 - stub launch PIDs die (Win11 Notepad)
             return None
-
-    def _reattach_to_window_process(self, application_cls: Any) -> None:  # noqa: ANN401
-        pid = int(self._window.Properties.ProcessId.Value)
-        self._app = application_cls.Attach(pid)
 
     def _find_window_by_title(self, title: str, *, timeout_s: float) -> Any:  # noqa: ANN401
         deadline = time.monotonic() + timeout_s
@@ -459,11 +465,6 @@ class FlaUIDesktopBackend:
 
         Mouse.MoveTo(int(x), int(y))
 
-    @staticmethod
-    def _reject_web(*, css: str | None, test_id: str | None) -> None:
-        if css is not None or test_id is not None:
-            raise ValueError("css/test_id are web-only; use col.gui.web")
-
 
 def _element_is_visible(element: Any) -> bool:  # noqa: ANN401
     try:
@@ -525,37 +526,3 @@ def _format_launch_args(raw: object) -> str | None:
     return text or None
 
 
-_MODIFIER_VK = {
-    "CTRL": "CONTROL",
-    "CONTROL": "CONTROL",
-    "SHIFT": "SHIFT",
-    "ALT": "ALT",
-    "MENU": "ALT",
-    "WIN": "LWIN",
-    "WINDOWS": "LWIN",
-    "LWIN": "LWIN",
-    "RWIN": "RWIN",
-}
-
-
-def _chord_virtual_key_names(key: str) -> list[str]:
-    """Map ``ctrl+shift+p`` / ``F5`` to FlaUI ``VirtualKeyShort`` member names."""
-    text = key.strip()
-    if not text:
-        return []
-    parts = [p.strip() for p in text.replace("-", "+").split("+") if p.strip()]
-    names: list[str] = []
-    for part in parts:
-        upper = part.upper()
-        if upper in _MODIFIER_VK:
-            names.append(_MODIFIER_VK[upper])
-            continue
-        if upper.startswith("F") and upper[1:].isdigit():
-            names.append(upper)
-            continue
-        if len(upper) == 1 and upper.isalnum():
-            names.append(f"KEY_{upper}")
-            continue
-        # ENTER, TAB, ESCAPE, SPACE, …
-        names.append(upper)
-    return names

@@ -6,28 +6,11 @@ import time
 from contextlib import suppress
 from typing import TYPE_CHECKING, Any, cast
 
+from colosseum_gui.backends.web.select_choice import select_choice
 from colosseum_gui.exceptions import GuiConnectionError
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-
-def _select_choice(
-    *,
-    value: str | None,
-    label: str | None,
-    index: int | None,
-) -> dict[str, str | int]:
-    choice: dict[str, str | int] = {}
-    if value is not None:
-        choice["value"] = value
-    if label is not None:
-        choice["label"] = label
-    if index is not None:
-        choice["index"] = index
-    if len(choice) != 1:
-        raise ValueError("provide exactly one of value, label, or index")
-    return choice
 
 
 class PlaywrightWebBackend:
@@ -107,15 +90,12 @@ class PlaywrightWebBackend:
         role: str | None = None,
         name: str | None = None,
         test_id: str | None = None,
-        automation_id: str | None = None,
         css: str | None = None,
         xpath: str | None = None,
-        image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        _ = (automation_id, image)
         locator = self._locator(
             role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         )
@@ -129,15 +109,13 @@ class PlaywrightWebBackend:
         role: str | None = None,
         name: str | None = None,
         test_id: str | None = None,
-        automation_id: str | None = None,
         css: str | None = None,
         xpath: str | None = None,
-        image: str | None = None,
         x: float | None = None,
         y: float | None = None,
         input: str | None = None,
     ) -> None:
-        _ = (automation_id, image, input)
+        _ = input
         locator = self._locator(
             role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         )
@@ -155,7 +133,7 @@ class PlaywrightWebBackend:
         css: str | None = None,
         xpath: str | None = None,
     ) -> None:
-        choice = _select_choice(value=value, label=label, index=index)
+        choice = select_choice(value=value, label=label, index=index)
         locator = self._locator(
             role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=None, y=None,
         )
@@ -170,14 +148,11 @@ class PlaywrightWebBackend:
         role: str | None = None,
         name: str | None = None,
         test_id: str | None = None,
-        automation_id: str | None = None,
         css: str | None = None,
         xpath: str | None = None,
-        image: str | None = None,
         x: float | None = None,
         y: float | None = None,
     ) -> None:
-        _ = (automation_id, image)
         locator = self._locator(
             role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
         )
