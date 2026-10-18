@@ -14,12 +14,16 @@ Web and desktop are separate kinds, like `col.equipment.speca` vs
 
 ## Install
 
+Download the wheel from [GitHub Releases](https://github.com/tps01/colosseum-gui/releases)
+and install it in the same environment as core. Replace `<version>` with
+the downloaded filename. For development, use `python -m pip install -e .`.
+
 ```bash
-pip install colosseum-gui
+python -m pip install "./colosseum_gui-<version>-py3-none-any.whl"
 playwright install chromium
 ```
 
-This requires `colosseum-core` 0.16.4+ and registers the `gui` namespace through
+This requires `colosseum-core` `>=0.17.0,<0.18` and registers the `gui` namespace through
 the `colosseum.plugins` entry point.
 
 That single package install includes Playwright, desktop drivers (FlaUI + bundled

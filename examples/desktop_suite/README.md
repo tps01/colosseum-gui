@@ -8,14 +8,15 @@ This is **not** OCR. The harness writes files; Colosseum waits for those files.
 ## Prerequisites
 
 - Windows interactive desktop (keep the harness windows uncovered)
-- `colosseum-core` **0.16.4+**, `colosseum-gui` **0.3.0+** (`args=`, chords, kind-honest locators), `colosseum-shared` **0.3.5+**
+- Compatible core, GUI and shared wheels. Current plugin manifests require
+  `colosseum-core>=0.17.0,<0.18`; package version numbers are independent.
 
 ```powershell
-# From the colosseum-gui repo (or any venv):
-pip install `
-  https://github.com/tps01/colosseum-core/releases/download/v0.16.4/colosseum_core-0.16.4-py3-none-any.whl `
-  https://github.com/tps01/colosseum-gui/releases/download/v0.3.0/colosseum_gui-0.3.0-py3-none-any.whl `
-  https://github.com/tps01/colosseum-shared/releases/download/v0.3.5/colosseum_shared-0.3.5-py3-none-any.whl
+# Download compatible release wheels; replace the version placeholders.
+python -m pip install `
+  "./colosseum_core-<core-version>-py3-none-any.whl" `
+  "./colosseum_gui-<gui-version>-py3-none-any.whl" `
+  "./colosseum_shared-<shared-version>-py3-none-any.whl"
 ```
 
 ## Run

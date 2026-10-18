@@ -326,10 +326,14 @@ def wait_stable(*, web_id: int, timeout_s: float = 2.0) -> None:
 
 @command
 def capture_screenshot(*, web_id: int, path: str) -> None:
-    """Capture a page screenshot and register it as a run artifact.
+    """Save a page screenshot under the active run output directory.
 
     :param web_id: Configured ``gui.web`` id from bench TOML.
     :type web_id: int
+
+    Requires artifacts enabled. Screenshot/tree files and screenshot
+    metadata sidecars are saved without measurement artifact-index rows.
+
     :param path: Path relative to the run output directory.
     :type path: str
 
@@ -344,6 +348,10 @@ def capture_tree(*, web_id: int, path: str = "captures/web_tree.json") -> None:
 
     :param web_id: Configured ``gui.web`` id from bench TOML.
     :type web_id: int
+
+    Requires artifacts enabled. Screenshot/tree files and screenshot
+    metadata sidecars are saved without measurement artifact-index rows.
+
     :param path: Path relative to the run output directory.
     :type path: str
 

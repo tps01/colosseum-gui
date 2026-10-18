@@ -28,16 +28,12 @@ image).
 2. Procedure + verification
 ---------------------------
 
-Web::
+The following complete script exercises web and desktop sim backends:
 
-   import colosseum as col
+.. literalinclude:: ../../../../examples/smoke_test.py
+   :language: python
 
-   def main() -> None:
-       col.gui.web.navigate(web_id=1, url="http://127.0.0.1:8080")
-       col.gui.web.click(web_id=1, role="button", name="Start")
-       col.gui.web.verify_visible(web_id=1, test_id="status", key="status_visible")
-
-Desktop and file side-effects often pair with ``col.shared.verify_*`` (install
+Desktop and file side-effects often pair with ``col.shared.verify.*`` (install
 ``colosseum-shared``). A fuller multi-app recipe is
 ``examples/desktop_suite/`` in this repository.
 
