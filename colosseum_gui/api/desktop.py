@@ -231,10 +231,14 @@ def wait_stable(*, desktop_id: int, timeout_s: float = 2.0) -> None:
 
 @command
 def capture_screenshot(*, desktop_id: int, path: str) -> None:
-    """Capture a window/desktop screenshot and register it as a run artifact.
+    """Save a window/desktop screenshot under the active run output directory.
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
+
+    Requires artifacts enabled. Screenshot/tree files and screenshot
+    metadata sidecars are saved without measurement artifact-index rows.
+
     :param path: Path relative to the run output directory.
     :type path: str
 
@@ -251,6 +255,10 @@ def capture_tree(*, desktop_id: int, path: str = "captures/desktop_tree.json") -
 
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
+
+    Requires artifacts enabled. Screenshot/tree files and screenshot
+    metadata sidecars are saved without measurement artifact-index rows.
+
     :param path: Path relative to the run output directory.
     :type path: str
 
