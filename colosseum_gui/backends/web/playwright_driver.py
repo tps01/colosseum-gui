@@ -72,12 +72,22 @@ class PlaywrightWebBackend:
         for closer in (
             getattr(self, "_context", None),
             getattr(self, "_browser", None) if getattr(self, "_owns_browser", True) else None,
-            getattr(self, "_pw", None),
         ):
             if closer is None:
                 continue
             with suppress(Exception):
                 closer.close()
+        # sync_playwright().start() returns a driver that is released with stop().
+        # close() is not that method, and swallowing the missing call leaves the
+        # sync loop on this thread so the next suite slot cannot start Playwright.
+        playwright = getattr(self, "_pw", None)
+        for name in ("_context", "_browser", "_pw"):
+            if hasattr(self, name):
+                delattr(self, name)
+        stop = getattr(playwright, "stop", None)
+        if callable(stop):
+            with suppress(Exception):
+                stop()
 
     def navigate(self, *, url: str) -> None:
         started = time.perf_counter()
