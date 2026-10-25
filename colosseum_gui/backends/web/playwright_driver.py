@@ -81,9 +81,9 @@ class PlaywrightWebBackend:
         # close() is not that method, and swallowing the missing call leaves the
         # sync loop on this thread so the next suite slot cannot start Playwright.
         playwright = getattr(self, "_pw", None)
-        self._context = None
-        self._browser = None
-        self._pw = None
+        for name in ("_context", "_browser", "_pw"):
+            if hasattr(self, name):
+                delattr(self, name)
         stop = getattr(playwright, "stop", None)
         if callable(stop):
             with suppress(Exception):
