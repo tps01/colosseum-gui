@@ -40,7 +40,7 @@ Ubuntu, also run `playwright install-deps` when using headed Chromium.
 | `gui.desktop` | `flaui` | Windows (default) | UIA3: `automation_id` / role / XPath; image/coord |
 | `gui.desktop` | `generic` | Linux, Windows | Image / coordinates / keys only — **not** UIA |
 
-Locators are kind-honest: `col.gui.web` does not take `automation_id`;
+Locators are driver-specific: `col.gui.web` does not take `automation_id`;
 `col.gui.desktop` does not take `css` / `test_id`. Use the matching namespace.
 
 **Desktop capability:** treat FlaUI (and desktop `sim`) as the UIA contract —
@@ -52,11 +52,8 @@ write suites against `sim` and expect them to run on `generic` without changes.
 `driver=generic` on Linux is the X11 / X11-forwarded path. AT-SPI is not
 forwarded over `ssh -X`; use image or coordinates, not UIA-style locators.
 
-On Windows, `driver=flaui` is the default (UIA3, which FlaUI recommends for
-WPF and Store-style apps; classic Win32 still works). Screenshots use mss so
-pythonnet does not depend on `System.Drawing`. The bridge pins
-`PYTHONNET_RUNTIME=netfx` so a machine with the .NET SDK does not silently
-switch to CoreCLR.
+For live setup and selecting reliable locators, see the
+[driver and locator guide](https://tps01.github.io/colosseum-gui/guides/drivers_locators.html).
 
 Do not use Calculator (FlaUI documents that `calc.exe` is the pre-Windows 8
 app only) or Task Manager (often elevated; UIA from a normal Python process
@@ -111,8 +108,7 @@ For a real Windows `.exe` (or a small harness) with multiple windows:
    then `col.config.load_config(..., force=True)` again (CLI `-g` is pinned;
    without `force=True` the reload is ignored).
 3. Use one `[gui.desktop]` row per **windowed** process Colosseum should launch
-   and attach to (`driver = "flaui"`, launch `args=` supported in gui **0.2.3+** /
-   kind-honest locators in **0.3.0+**; use `[[gui.desktop]]` when the file has
+   and attach to (`driver = "flaui"`, launch `args=` supported; use `[[gui.desktop]]` when the file has
    more than one desktop row).
 4. Prove async product work with **side-effect files**
    (`col.shared.verify.snapshot_files` / `verify_new_file` / `verify_no_new_file`),
