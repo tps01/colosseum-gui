@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "colosseum-gui"
-version = "0.3.4"
+version = "0.3.6"
 description = "Colosseum product UI automation plugin (web and desktop)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -16,7 +16,8 @@ dependencies = [
   "pythonnet>=3.0,<4; sys_platform == 'win32'",
   "python-xlib>=0.33,<1; sys_platform == 'linux'",
   "mss>=9.0,<11",
-  "pillow>=10,<12",
+  "pillow>=10,<12; python_version < '3.14'",
+  "pillow>=12,<14; python_version >= '3.14'",
   "pytest>=8.0",
   "mypy>=1.11",
   "ruff>=0.8",

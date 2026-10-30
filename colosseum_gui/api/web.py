@@ -251,6 +251,20 @@ def hover(
     :param web_id: Configured ``gui.web`` id from bench TOML.
     :type web_id: int
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param test_id: Web test identifier resolved by the browser backend; None omits this selector.
+    :param css: Web CSS selector; None omits it. Prefer stable attributes over generated class
+        names.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
+
     :returns: None
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
@@ -291,6 +305,20 @@ def wait(
     :type timeout_s: float
     :param text: Expected text when ``until=text``.
     :type text: str | None
+
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param test_id: Web test identifier resolved by the browser backend; None omits this selector.
+    :param css: Web CSS selector; None omits it. Prefer stable attributes over generated class
+        names.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
 
     :returns: None
 
@@ -398,6 +426,20 @@ def measure_action_latency_ms(
     :param key: Unique measurement key within domain ``gui``.
     :type key: str
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param test_id: Web test identifier resolved by the browser backend; None omits this selector.
+    :param css: Web CSS selector; None omits it. Prefer stable attributes over generated class
+        names.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
+
     :returns: Action latency in milliseconds.
     :rtype: float
     """
@@ -431,6 +473,23 @@ def measure_contrast_ratio(
     :type key: str
     :param path: Screenshot path relative to the run output directory.
     :type path: str
+
+    :param fg_x: Foreground sample rectangle left edge in screenshot pixels. The rectangle must
+        fit inside the image; width and height must be positive.
+    :param fg_y: Foreground sample rectangle top edge in screenshot pixels. The rectangle must
+        fit inside the image; width and height must be positive.
+    :param fg_w: Foreground sample rectangle width in screenshot pixels. The rectangle must fit
+        inside the image; width and height must be positive.
+    :param fg_h: Foreground sample rectangle height in screenshot pixels. The rectangle must fit
+        inside the image; width and height must be positive.
+    :param bg_x: Background sample rectangle left edge in screenshot pixels. The rectangle must
+        fit inside the image; width and height must be positive.
+    :param bg_y: Background sample rectangle top edge in screenshot pixels. The rectangle must
+        fit inside the image; width and height must be positive.
+    :param bg_w: Background sample rectangle width in screenshot pixels. The rectangle must fit
+        inside the image; width and height must be positive.
+    :param bg_h: Background sample rectangle height in screenshot pixels. The rectangle must fit
+        inside the image; width and height must be positive.
 
     :returns: Contrast ratio.
     :rtype: float
@@ -475,6 +534,20 @@ def verify_text(
     :param optional: When true, FAIL does not fail the run.
     :type optional: bool
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param test_id: Web test identifier resolved by the browser backend; None omits this selector.
+    :param css: Web CSS selector; None omits it. Prefer stable attributes over generated class
+        names.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
+
     :returns: Pass/fail result.
     :rtype: VerificationResult
 
@@ -518,6 +591,20 @@ def verify_visible(
     :param optional: When true, FAIL does not fail the run.
     :type optional: bool
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param test_id: Web test identifier resolved by the browser backend; None omits this selector.
+    :param css: Web CSS selector; None omits it. Prefer stable attributes over generated class
+        names.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
+
     :returns: Pass/fail result.
     :rtype: VerificationResult
     """
@@ -557,6 +644,20 @@ def verify_enabled(
     :type key: str
     :param optional: When true, FAIL does not fail the run.
     :type optional: bool
+
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param test_id: Web test identifier resolved by the browser backend; None omits this selector.
+    :param css: Web CSS selector; None omits it. Prefer stable attributes over generated class
+        names.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
 
     :returns: Pass/fail result.
     :rtype: VerificationResult

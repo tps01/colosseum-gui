@@ -116,6 +116,22 @@ def type_text(
     :param text: Text to enter.
     :type text: str
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param automation_id: UIA AutomationId for FlaUI or desktop sim; None omits this selector.
+    :param image: Template image path for desktop matching; None omits image selection. Keep
+        scaling and appearance consistent.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param input: Input strategy supported by the driver; desktop click uses invoke or mouse.
+        None uses the driver default.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+
     :returns: None
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
@@ -164,6 +180,20 @@ def hover(
     :param desktop_id: Configured ``gui.desktop`` id from bench TOML.
     :type desktop_id: int
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param automation_id: UIA AutomationId for FlaUI or desktop sim; None omits this selector.
+    :param image: Template image path for desktop matching; None omits image selection. Keep
+        scaling and appearance consistent.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+
     :returns: None
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
@@ -199,6 +229,16 @@ def wait(
     :type until: str
     :param timeout_s: Timeout in seconds.
     :type timeout_s: float
+
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param automation_id: UIA AutomationId for FlaUI or desktop sim; None omits this selector.
+    :param text: Text used by this operation; exact matching behavior follows the selected
+        backend.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
 
     :returns: None
 
@@ -286,6 +326,18 @@ def measure_action_latency_ms(
     :param key: Unique measurement key within domain ``gui``.
     :type key: str
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param automation_id: UIA AutomationId for FlaUI or desktop sim; None omits this selector.
+    :param image: Template image path for desktop matching; None omits image selection. Keep
+        scaling and appearance consistent.
+    :param x: Horizontal input coordinate for the selected backend; None omits coordinate
+        selection.
+    :param y: Vertical input coordinate for the selected backend; None omits coordinate
+        selection.
+
     :returns: Action latency in milliseconds.
     :rtype: float
     """
@@ -327,6 +379,23 @@ def measure_contrast_ratio(
     :param path: Screenshot path relative to the run output directory.
     :type path: str
 
+    :param fg_x: Foreground sample rectangle left edge in screenshot pixels. The rectangle must
+        fit inside the image; width and height must be positive.
+    :param fg_y: Foreground sample rectangle top edge in screenshot pixels. The rectangle must
+        fit inside the image; width and height must be positive.
+    :param fg_w: Foreground sample rectangle width in screenshot pixels. The rectangle must fit
+        inside the image; width and height must be positive.
+    :param fg_h: Foreground sample rectangle height in screenshot pixels. The rectangle must fit
+        inside the image; width and height must be positive.
+    :param bg_x: Background sample rectangle left edge in screenshot pixels. The rectangle must
+        fit inside the image; width and height must be positive.
+    :param bg_y: Background sample rectangle top edge in screenshot pixels. The rectangle must
+        fit inside the image; width and height must be positive.
+    :param bg_w: Background sample rectangle width in screenshot pixels. The rectangle must fit
+        inside the image; width and height must be positive.
+    :param bg_h: Background sample rectangle height in screenshot pixels. The rectangle must fit
+        inside the image; width and height must be positive.
+
     :returns: Contrast ratio.
     :rtype: float
     """
@@ -367,6 +436,14 @@ def verify_text(
     :param optional: When true, FAIL does not fail the run.
     :type optional: bool
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param automation_id: UIA AutomationId for FlaUI or desktop sim; None omits this selector.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+
     :returns: Pass/fail result.
     :rtype: VerificationResult
 
@@ -404,6 +481,14 @@ def verify_visible(
     :param optional: When true, FAIL does not fail the run.
     :type optional: bool
 
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param automation_id: UIA AutomationId for FlaUI or desktop sim; None omits this selector.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
+
     :returns: Pass/fail result.
     :rtype: VerificationResult
 
@@ -440,6 +525,14 @@ def verify_enabled(
     :type key: str
     :param optional: When true, FAIL does not fail the run.
     :type optional: bool
+
+    :param role: Accessible role/control type; requires a tree-capable driver. None omits this
+        selector.
+    :param name: Accessible element name; None omits this selector. Prefer a stable, unique
+        name.
+    :param automation_id: UIA AutomationId for FlaUI or desktop sim; None omits this selector.
+    :param xpath: XPath locator supported by the selected driver (web DOM or desktop UIA); None
+        omits it.
 
     :returns: Pass/fail result.
     :rtype: VerificationResult
