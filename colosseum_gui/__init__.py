@@ -4,6 +4,7 @@ from importlib import metadata
 
 from colosseum.config.sections import ConfigSectionSpec
 from colosseum.logging import get_logger
+from colosseum.plugins.lazy import lazy_module
 from colosseum.plugins.registry import PluginRegistry
 
 __colosseum_domain__ = "gui"
@@ -49,10 +50,9 @@ _CONFIG_SPECS = (
 
 
 def register(registry: PluginRegistry) -> None:
-    from colosseum_gui import api
     from colosseum_gui.connections import close_all
 
-    registry.register_namespace("gui", api)
+    registry.register_namespace("gui", lazy_module("colosseum_gui.api"))
     _logger.debug("Registered col.gui namespace")
     registry.register_shutdown(close_all)
     for spec in _CONFIG_SPECS:
