@@ -9,7 +9,7 @@ This is **not** OCR. The harness writes files; Colosseum waits for those files.
 
 - Windows interactive desktop (keep the harness windows uncovered)
 - Compatible core, GUI and shared wheels. Current plugin manifests require
-  `colosseum-core>=0.17.0,<0.18`; package version numbers are independent.
+  `colosseum-core>=0.18,<0.19`; package version numbers are independent.
 
 ```powershell
 # Download compatible release wheels; replace the version placeholders.

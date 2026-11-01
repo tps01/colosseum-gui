@@ -531,7 +531,7 @@ def verify_text(
     :type key: str
     :param expected: Expected text.
     :type expected: str
-    :param optional: When true, FAIL does not fail the run.
+    :param optional: When ``True``, FAIL/ERROR is retained but excluded from the aggregate verdict.
     :type optional: bool
 
     :param role: Accessible role/control type; requires a tree-capable driver. None omits this
@@ -588,7 +588,7 @@ def verify_visible(
     :type web_id: int
     :param key: Verification key.
     :type key: str
-    :param optional: When true, FAIL does not fail the run.
+    :param optional: When ``True``, FAIL/ERROR is retained but excluded from the aggregate verdict.
     :type optional: bool
 
     :param role: Accessible role/control type; requires a tree-capable driver. None omits this
@@ -642,7 +642,7 @@ def verify_enabled(
     :type web_id: int
     :param key: Verification key.
     :type key: str
-    :param optional: When true, FAIL does not fail the run.
+    :param optional: When ``True``, FAIL/ERROR is retained but excluded from the aggregate verdict.
     :type optional: bool
 
     :param role: Accessible role/control type; requires a tree-capable driver. None omits this
@@ -698,7 +698,7 @@ def verify_visual(
     :type max_diff_ratio: float
     :param threshold: Per-channel difference threshold.
     :type threshold: int
-    :param optional: When true, FAIL does not fail the run.
+    :param optional: When ``True``, FAIL/ERROR is retained but excluded from the aggregate verdict.
     :type optional: bool
 
     :returns: Pass/fail result.
@@ -727,7 +727,7 @@ def verify_contrast(
     :type key: str
     :param minimum: Minimum contrast ratio.
     :type minimum: float
-    :param optional: When true, FAIL does not fail the run.
+    :param optional: When ``True``, FAIL/ERROR is retained but excluded from the aggregate verdict.
     :type optional: bool
 
     :returns: Pass/fail result.

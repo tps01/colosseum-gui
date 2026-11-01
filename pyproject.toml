@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "colosseum-gui"
-version = "0.3.9"
+version = "0.4.0"
 description = "Colosseum product UI automation plugin (web and desktop)"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
-  "colosseum-core>=0.17.0,<0.18",
+  "colosseum-core>=0.18,<0.19",
   "playwright>=1.40,<2",
   "pythonnet>=3.0,<4; sys_platform == 'win32'",
   "python-xlib>=0.33,<1; sys_platform == 'linux'",
