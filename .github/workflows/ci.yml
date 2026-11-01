@@ -33,7 +33,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ../colosseum-core
-          python -m pip install -e .
+          python -m pip install -r requirements.txt
           python -m pip check
       - name: Smoke test installed runtime
         working-directory: colosseum-gui
@@ -67,7 +67,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ../colosseum-core
-          python -m pip install -e .
+          python -m pip install -r requirements.txt
       - name: Lint
         working-directory: colosseum-gui
         run: ruff check colosseum_gui tests examples
