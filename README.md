@@ -23,7 +23,7 @@ python -m pip install "./colosseum_gui-<version>-py3-none-any.whl"
 playwright install chromium
 ```
 
-This requires `colosseum-core` `>=0.17.0,<0.18` and registers the `gui` namespace through
+This requires `colosseum-core` `>=0.18,<0.19` and registers the `gui` namespace through
 the `colosseum.plugins` entry point.
 
 That single package install includes Playwright, desktop drivers (FlaUI + bundled
