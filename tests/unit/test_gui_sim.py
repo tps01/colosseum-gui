@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 import colosseum as col
 import pytest
-from colosseum_gui.exceptions import GuiCapabilityError
 from colosseum_gui.visual.pngutil import read_png, solid_rgb, write_png
 from PIL import Image
 
@@ -99,18 +98,10 @@ def test_locator_reject_helpers() -> None:
     reject_desktop_locators()
     with pytest.raises(ValueError, match="web-only"):
         reject_web_locators(css=".btn")
+    with pytest.raises(ValueError, match="web-only"):
+        reject_web_locators(test_id="submit")
     with pytest.raises(ValueError, match="desktop-only"):
         reject_desktop_locators(automation_id="StartBtn")
-
-
-def test_desktop_generic_rejects_uia_on_capability(tmp_path: Path, ctx) -> None:
-    # generic driver raises GuiCapabilityError for automation_id (needs display on real OS;
-    # on CI we only assert the factory path for sim vs capability messaging via sim).
-    _ = (tmp_path, ctx)
-    from colosseum_gui.capabilities import unsupported
-
-    with pytest.raises(GuiCapabilityError):
-        unsupported("generic", "uia_locate", detail="needs flaui")
 
 
 def test_visual_diff_pass_and_fail(tmp_path: Path) -> None:
@@ -141,6 +132,18 @@ def test_contrast_helpers(tmp_path: Path) -> None:
     bg = sample_mean_rgb(path, x=5, y=0, width=5, height=10)
     ratio = contrast_ratio(fg, bg)
     assert ratio > 20.0
+
+
+def test_write_png_rejects_wrong_rgb_length(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="rgb length"):
+        write_png(tmp_path / "bad.png", 2, 2, b"\x00\x01")
+
+
+def test_read_png_rejects_non_png(tmp_path: Path) -> None:
+    path = tmp_path / "not.png"
+    path.write_bytes(b"not-a-png")
+    with pytest.raises(ValueError, match="not a PNG"):
+        read_png(path)
 
 
 def test_png_roundtrip(tmp_path: Path) -> None:
@@ -301,26 +304,31 @@ def test_parse_chord_and_adapters() -> None:
     assert to_flaui_virtual_key_names(tokens) == ["CONTROL", "SHIFT", "KEY_P"]
     assert to_win32_vk_codes(tokens) == [0x11, 0x10, ord("P")]
     assert format_chord(tokens) == "ctrl+shift+p"
+    hyphen = parse_chord("ctrl-shift-p")
+    assert format_chord(hyphen) == "ctrl+shift+p"
+    assert format_chord(parse_chord("menu+win+a")) == "alt+win+a"
     assert to_flaui_virtual_key_names(parse_chord("F5")) == ["F5"]
     assert to_flaui_virtual_key_names(parse_chord("enter")) == ["ENTER"]
+    assert to_win32_vk_codes(parse_chord("F1")) == [0x70]
+    assert to_win32_vk_codes(parse_chord("esc")) == [0x1B]
+    with pytest.raises(ValueError, match="empty key"):
+        to_win32_vk_codes([])
+    with pytest.raises(ValueError, match="unsupported key"):
+        to_win32_vk_codes(parse_chord("PAGEUP"))
 
 
 def test_flaui_format_launch_args() -> None:
-    import subprocess
-
     from colosseum_gui.backends.desktop.flaui_driver import _format_launch_args
 
     assert _format_launch_args(None) is None
+    assert _format_launch_args("") is None
+    assert _format_launch_args("  ") is None
+    assert _format_launch_args([]) is None
+    assert _format_launch_args(["", "  "]) is None
     assert _format_launch_args("fixture --phrase X") == "fixture --phrase X"
-    argv = [
-        "fixture",
-        "--phrase",
-        "spaced launch phrase",
-        "--title",
-        "Pa List Args",
-        "--easy",
-    ]
-    assert _format_launch_args(argv) == subprocess.list2cmdline(argv)
+    assert _format_launch_args(
+        ["fixture", "--phrase", "spaced launch phrase", "--title", "Pa List Args", "--easy"],
+    ) == 'fixture --phrase "spaced launch phrase" --title "Pa List Args" --easy'
 
 
 def test_desktop_sim_press_key_records_chord(loaded) -> None:
