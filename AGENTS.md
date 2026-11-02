@@ -11,8 +11,9 @@ the user explicitly requests it.
 - Registers the `gui` namespace → `col.gui.web.*` and `col.gui.desktop.*`
 - Web and desktop are separate kinds (like `speca` vs `oscope`)
 - Drivers implement each kind (`sim`, `playwright`, `generic`, `flaui`)
-- Declares all runtime, driver, and test/static deps in main `dependencies`
-  (one `pip install` / `pip install -e .`; see `RULES.md`)
+- Declares runtime and driver deps in `pyproject.toml`; test/static tooling
+  lives in `requirements.txt` (`pip install -r requirements.txt`; see
+  `RULES.md`)
 
 **Naming:** Core's `colosseum.gui` package is the optional **operator /
 test-runner UI** (`colosseum --gui`). This plugin is the **product under test**

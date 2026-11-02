@@ -2,9 +2,9 @@
 
 ## Documentation
 
-API reference (GitHub Pages): https://tps01.github.io/colosseum-gui/
+API reference (GitHub Pages): <https://tps01.github.io/colosseum-gui/>
 
-Framework hub: https://tps01.github.io/colosseum-core/
+Framework hub: <https://tps01.github.io/colosseum-core/>
 
 First-party Colosseum plugin for **product UI automation** (`col.gui.web` /
 `col.gui.desktop`). This is not the core test-runner UI (`colosseum --gui`).
@@ -16,7 +16,8 @@ Web and desktop are separate kinds, like `col.equipment.speca` vs
 
 Download the wheel from [GitHub Releases](https://github.com/tps01/colosseum-gui/releases)
 and install it in the same environment as core. Replace `<version>` with
-the downloaded filename. For development, use `python -m pip install -e .`.
+the downloaded filename. For development, use
+`python -m pip install -r requirements.txt`.
 
 ```bash
 python -m pip install "./colosseum_gui-<version>-py3-none-any.whl"
@@ -182,7 +183,7 @@ python scripts/vendor_flaui_dlls.py
 
 ```bash
 pip install -e ../colosseum-core
-pip install -e .
+pip install -r requirements.txt
 pytest
 ruff check colosseum_gui
 mypy
