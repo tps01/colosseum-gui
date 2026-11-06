@@ -57,6 +57,16 @@ def test_web_select_option_requires_one_choice(loaded) -> None:
         backend.select_option(test_id="widget-select", value="a", label="b")
 
 
+def test_web_sim_wait_rejects_invalid_conditions(loaded) -> None:
+    from colosseum_gui.connections import get_web
+
+    backend = get_web(1)
+    with pytest.raises(ValueError, match="unsupported wait until"):
+        backend.wait(until="typo", role="button", name="Start")
+    with pytest.raises(ValueError, match="until=text requires text="):
+        backend.wait(until="text", role="button", name="Start")
+
+
 def test_desktop_sim_uia_click(loaded) -> None:
     col.gui.desktop.click(desktop_id=1, automation_id="StartBtn")
     result = col.gui.desktop.verify_text(

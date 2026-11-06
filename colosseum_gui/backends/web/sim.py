@@ -129,6 +129,11 @@ class SimWebBackend:
         text: str | None = None,
     ) -> None:
         _ = timeout_s
+        if until == "text":
+            if text is None:
+                raise ValueError("wait until=text requires text=")
+        elif until not in {"visible", "enabled"}:
+            raise ValueError(f"unsupported wait until={until!r}")
         if x is not None or y is not None:
             unsupported(
                 self.driver_name,
@@ -140,7 +145,7 @@ class SimWebBackend:
             raise TimeoutError(f"sim wait visible timed out for {key}")
         if until == "enabled" and key not in self._enabled:
             raise TimeoutError(f"sim wait enabled timed out for {key}")
-        if until == "text" and text is not None and self._text_by_role.get(key) != text:
+        if until == "text" and self._text_by_role.get(key) != text:
             raise TimeoutError(f"sim wait text timed out for {key}")
 
     def wait_stable(self, *, timeout_s: float = 2.0) -> None:
