@@ -194,3 +194,5 @@ On Windows, validate the FlaUI bridge against a real app:
 ```bash
 python scripts/spike_flaui.py
 ```
+
+See [starter fuzz testing](tests/fuzz/README.md) for seed replay, optional Atheris runs, and manual coverage reports.

@@ -73,3 +73,6 @@ Desktop.ini
 scratchpad/
 wheelhouse/
 offline-bundle/
+
+# Local fuzz discoveries, crash artifacts and coverage reports
+.fuzz-work/
