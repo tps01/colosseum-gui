@@ -559,5 +559,3 @@ def _quote_windows_command(args: list[str]) -> str:
             result.extend(slashes)
             result.append('"')
     return "".join(result)
-
-

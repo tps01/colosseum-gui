@@ -23,8 +23,7 @@ class PlaywrightWebBackend:
             from playwright.sync_api import sync_playwright
         except ImportError as exc:  # pragma: no cover - install/env issue
             raise GuiConnectionError(
-                "playwright is not installed; reinstall colosseum-gui "
-                "(playwright is a required dependency)",
+                "playwright is not installed; reinstall colosseum-gui " "(playwright is a required dependency)",
             ) from exc
 
         self.web_id = web_id
@@ -107,7 +106,13 @@ class PlaywrightWebBackend:
         input: str | None = None,
     ) -> None:
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
         )
         force = (input or "invoke") == "mouse"
         locator.click(force=force)
@@ -127,7 +132,13 @@ class PlaywrightWebBackend:
     ) -> None:
         _ = input
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
         )
         locator.fill(text)
 
@@ -145,7 +156,13 @@ class PlaywrightWebBackend:
     ) -> None:
         choice = select_choice(value=value, label=label, index=index)
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=None, y=None,
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=None,
+            y=None,
         )
         locator.select_option(**choice)
 
@@ -164,7 +181,13 @@ class PlaywrightWebBackend:
         y: float | None = None,
     ) -> None:
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
         )
         locator.hover()
 
@@ -183,7 +206,13 @@ class PlaywrightWebBackend:
         text: str | None = None,
     ) -> None:
         locator = self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
         )
         timeout_ms = int(timeout_s * 1000)
         if until == "visible":
@@ -239,9 +268,17 @@ class PlaywrightWebBackend:
         x: float | None = None,
         y: float | None = None,
     ) -> str:
-        return str(self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
-        ).inner_text())
+        return str(
+            self._locator(
+                role=role,
+                name=name,
+                test_id=test_id,
+                css=css,
+                xpath=xpath,
+                x=x,
+                y=y,
+            ).inner_text()
+        )
 
     def is_visible(
         self,
@@ -254,9 +291,17 @@ class PlaywrightWebBackend:
         x: float | None = None,
         y: float | None = None,
     ) -> bool:
-        return bool(self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
-        ).is_visible())
+        return bool(
+            self._locator(
+                role=role,
+                name=name,
+                test_id=test_id,
+                css=css,
+                xpath=xpath,
+                x=x,
+                y=y,
+            ).is_visible()
+        )
 
     def is_enabled(
         self,
@@ -269,9 +314,17 @@ class PlaywrightWebBackend:
         x: float | None = None,
         y: float | None = None,
     ) -> bool:
-        return bool(self._locator(
-            role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y,
-        ).is_enabled())
+        return bool(
+            self._locator(
+                role=role,
+                name=name,
+                test_id=test_id,
+                css=css,
+                xpath=xpath,
+                x=x,
+                y=y,
+            ).is_enabled()
+        )
 
     def measure_navigation_ms(self) -> float:
         return float(self._last_nav_ms)
@@ -298,9 +351,7 @@ class PlaywrightWebBackend:
         x: float | None = None,
         y: float | None = None,
     ) -> Any:  # noqa: ANN401
-        if x is not None and y is not None and role is None and name is None and not (
-            test_id or css or xpath
-        ):
+        if x is not None and y is not None and role is None and name is None and not (test_id or css or xpath):
             # Coordinate click uses page.mouse, exposed via a thin wrapper locator.
             return _CoordLocator(self._page, x, y)
         if test_id is not None:
