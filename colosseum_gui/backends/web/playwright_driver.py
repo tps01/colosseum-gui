@@ -23,7 +23,7 @@ class PlaywrightWebBackend:
             from playwright.sync_api import sync_playwright
         except ImportError as exc:  # pragma: no cover - install/env issue
             raise GuiConnectionError(
-                "playwright is not installed; reinstall colosseum-gui " "(playwright is a required dependency)",
+                "playwright is not installed; reinstall colosseum-gui (playwright is a required dependency)",
             ) from exc
 
         self.web_id = web_id
@@ -277,7 +277,7 @@ class PlaywrightWebBackend:
                 xpath=xpath,
                 x=x,
                 y=y,
-            ).inner_text()
+            ).inner_text(),
         )
 
     def is_visible(
@@ -300,7 +300,7 @@ class PlaywrightWebBackend:
                 xpath=xpath,
                 x=x,
                 y=y,
-            ).is_visible()
+            ).is_visible(),
         )
 
     def is_enabled(
@@ -323,7 +323,7 @@ class PlaywrightWebBackend:
                 xpath=xpath,
                 x=x,
                 y=y,
-            ).is_enabled()
+            ).is_enabled(),
         )
 
     def measure_navigation_ms(self) -> float:

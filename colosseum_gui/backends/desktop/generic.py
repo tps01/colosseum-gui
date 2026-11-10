@@ -570,7 +570,7 @@ def _mss_grab(*, monitor: dict[str, int]) -> bytes:
         import mss.tools
     except ImportError as exc:  # pragma: no cover
         raise GuiConnectionError(
-            "mss is not installed; reinstall colosseum-gui " "(mss is a required dependency)",
+            "mss is not installed; reinstall colosseum-gui (mss is a required dependency)",
         ) from exc
 
     with mss.mss() as sct:
