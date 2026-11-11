@@ -343,10 +343,7 @@ class FlaUIDesktopBackend:
 
         if exe:
             launch_args = _format_launch_args(config.get("args"))
-            if launch_args:
-                app = application_cls.Launch(str(exe), launch_args)
-            else:
-                app = application_cls.Launch(str(exe))
+            app = application_cls.Launch(str(exe), launch_args) if launch_args else application_cls.Launch(str(exe))
             title_hint = title or Path(str(exe)).stem
             window = self._wait_main_window(app, timeout_s=min(timeout_s, 5.0))
             if window is None:
@@ -559,5 +556,3 @@ def _quote_windows_command(args: list[str]) -> str:
             result.extend(slashes)
             result.append('"')
     return "".join(result)
-
-

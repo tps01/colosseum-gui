@@ -33,9 +33,13 @@ colosseum_gui = ["py.typed", "vendor/flaui/*.dll", "vendor/flaui/FlaUI-LICENSE.t
 testpaths = ["tests/unit"]
 pythonpath = ["."]
 
+[tool.black]
+line-length = 120
+target-version = ["py39"]
+
 [tool.ruff]
 target-version = "py39"
-line-length = 100
+line-length = 120
 src = ["colosseum_gui"]
 
 [tool.ruff.lint]
