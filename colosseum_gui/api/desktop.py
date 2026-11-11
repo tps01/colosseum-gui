@@ -5,9 +5,13 @@ from __future__ import annotations
 import time
 
 from colosseum.decorators import VerificationResult, command, measurement, verification
+from colosseum.logging import get_logger
 
 from colosseum_gui.api import _visual
-from colosseum_gui.connections import get_desktop
+from colosseum_gui.connections import get_config, get_desktop
+from colosseum_gui.locators import describe_target
+
+_logger = get_logger("colosseum.gui")
 
 __all__ = [
     "connect",
@@ -42,6 +46,9 @@ def connect(*, desktop_id: int) -> None:
     :raises OSError: ``driver=flaui`` on a non-Windows host.
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    cfg = get_config("desktop", desktop_id)
+    app = cfg.get("title") or cfg.get("exe") or desktop_id
+    _logger.info("Launching desktop app %s", app)
     get_desktop(desktop_id)
 
 
@@ -83,6 +90,19 @@ def click(
 
     :raises GuiCapabilityError: Locator requires a different driver.
     """
+    _logger.info(
+        "Clicking %s on desktop %s",
+        describe_target(
+            role=role,
+            name=name,
+            automation_id=automation_id,
+            image=image,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        desktop_id,
+    )
     get_desktop(desktop_id).click(
         role=role,
         name=name,
@@ -136,6 +156,19 @@ def type_text(
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    _logger.info(
+        "Typing into %s on desktop %s",
+        describe_target(
+            role=role,
+            name=name,
+            automation_id=automation_id,
+            image=image,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        desktop_id,
+    )
     get_desktop(desktop_id).type_text(
         text=text,
         role=role,
@@ -160,6 +193,7 @@ def press_key(*, desktop_id: int, key: str) -> None:
 
     :returns: None
     """
+    _logger.info("Pressing %s on desktop %s", key, desktop_id)
     get_desktop(desktop_id).press_key(key=key)
 
 
@@ -198,6 +232,19 @@ def hover(
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    _logger.info(
+        "Hovering over %s on desktop %s",
+        describe_target(
+            role=role,
+            name=name,
+            automation_id=automation_id,
+            image=image,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        desktop_id,
+    )
     get_desktop(desktop_id).hover(
         role=role,
         name=name,
@@ -244,6 +291,18 @@ def wait(
 
     :raises GuiCapabilityError: Tree waits are unsupported on ``driver=generic``.
     """
+    condition = until if text is None else f"{until} {text}"
+    _logger.info(
+        "Waiting for %s to be %s on desktop %s",
+        describe_target(
+            role=role,
+            name=name,
+            automation_id=automation_id,
+            xpath=xpath,
+        ),
+        condition,
+        desktop_id,
+    )
     get_desktop(desktop_id).wait(
         until=until,
         timeout_s=timeout_s,
@@ -266,6 +325,7 @@ def wait_stable(*, desktop_id: int, timeout_s: float = 2.0) -> None:
 
     :returns: None
     """
+    _logger.info("Waiting for desktop %s to settle", desktop_id)
     get_desktop(desktop_id).wait_stable(timeout_s=timeout_s)
 
 
@@ -284,8 +344,11 @@ def capture_screenshot(*, desktop_id: int, path: str) -> None:
 
     :returns: None
     """
+    _logger.info("Capturing screenshot of desktop %s to %s", desktop_id, path)
     _visual.save_screenshot_artifact(
-        get_desktop(desktop_id), path=path, kind="gui_desktop_screenshot",
+        get_desktop(desktop_id),
+        path=path,
+        kind="gui_desktop_screenshot",
     )
 
 
@@ -304,6 +367,7 @@ def capture_tree(*, desktop_id: int, path: str = "captures/desktop_tree.json") -
 
     :returns: None
     """
+    _logger.info("Capturing window tree of desktop %s to %s", desktop_id, path)
     _visual.save_tree_artifact(get_desktop(desktop_id), path=path, kind="gui_desktop_tree")
 
 
@@ -342,6 +406,18 @@ def measure_action_latency_ms(
     :rtype: float
     """
     _ = key
+    _logger.info(
+        "Measuring click latency on %s on desktop %s",
+        describe_target(
+            role=role,
+            name=name,
+            automation_id=automation_id,
+            image=image,
+            x=x,
+            y=y,
+        ),
+        desktop_id,
+    )
     backend = get_desktop(desktop_id)
     started = time.perf_counter()
     backend.click(
@@ -400,6 +476,7 @@ def measure_contrast_ratio(
     :rtype: float
     """
     _ = (desktop_id, key)
+    _logger.info("Measuring contrast in %s", path)
     return _visual.measure_contrast_ratio_from_path(
         path=path,
         fg_x=fg_x,
@@ -450,6 +527,16 @@ def verify_text(
     :raises GuiCapabilityError: Unsupported on ``driver=generic``.
     """
     _ = key
+    _logger.info(
+        "Verifying text of %s on desktop %s",
+        describe_target(
+            role=role,
+            name=name,
+            automation_id=automation_id,
+            xpath=xpath,
+        ),
+        desktop_id,
+    )
     return _visual.verify_text_equals(
         get_desktop(desktop_id),
         expected=expected,
@@ -495,6 +582,16 @@ def verify_visible(
     :raises GuiCapabilityError: Unsupported on ``driver=generic``.
     """
     _ = key
+    _logger.info(
+        "Verifying %s is visible on desktop %s",
+        describe_target(
+            role=role,
+            name=name,
+            automation_id=automation_id,
+            xpath=xpath,
+        ),
+        desktop_id,
+    )
     return _visual.verify_is_visible(
         get_desktop(desktop_id),
         optional=optional,
@@ -540,6 +637,16 @@ def verify_enabled(
     :raises GuiCapabilityError: Unsupported on ``driver=generic``.
     """
     _ = key
+    _logger.info(
+        "Verifying %s is enabled on desktop %s",
+        describe_target(
+            role=role,
+            name=name,
+            automation_id=automation_id,
+            xpath=xpath,
+        ),
+        desktop_id,
+    )
     return _visual.verify_is_enabled(
         get_desktop(desktop_id),
         optional=optional,
@@ -580,6 +687,7 @@ def verify_visual(
     :rtype: VerificationResult
     """
     _ = key
+    _logger.info("Comparing screenshot %s to %s", path, baseline)
     return _visual.verify_visual_paths(
         path=path,
         baseline=baseline,
@@ -608,6 +716,7 @@ def verify_contrast(
     :returns: Pass/fail result.
     :rtype: VerificationResult
     """
+    _logger.info("Verifying contrast for %s", key)
     return _visual.verify_contrast_key(
         key=key,
         command_candidates=("desktop.measure_contrast_ratio",),

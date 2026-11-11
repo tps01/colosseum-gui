@@ -51,10 +51,15 @@ def _get_backend(kind: str, resource_id: int) -> Any:  # noqa: ANN401
         key,
         _open,
         on_reuse=lambda: _logger.debug(
-            "Reusing cached gui backend gui.%s id=%s", kind, resource_id,
+            "Reusing cached gui backend gui.%s id=%s",
+            kind,
+            resource_id,
         ),
         on_open=lambda: _logger.debug(
-            "Opening gui backend gui.%s id=%s driver=%s", kind, resource_id, driver,
+            "Opening gui backend gui.%s id=%s driver=%s",
+            kind,
+            resource_id,
+            driver,
         ),
     )
 

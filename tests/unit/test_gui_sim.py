@@ -34,7 +34,11 @@ def test_web_sim_navigate_and_screenshot(loaded) -> None:
 
 def test_web_sim_verify_text(loaded) -> None:
     result = col.gui.web.verify_text(
-        web_id=1, key="btn", expected="Start", role="button", name="Start",
+        web_id=1,
+        key="btn",
+        expected="Start",
+        role="button",
+        name="Start",
     )
     assert result.status == "PASS"
 
@@ -42,7 +46,10 @@ def test_web_sim_verify_text(loaded) -> None:
 def test_web_sim_select_option(loaded) -> None:
     col.gui.web.select_option(web_id=1, test_id="widget-select", value="Sprocket-7")
     result = col.gui.web.verify_text(
-        web_id=1, key="sku", expected="Sprocket-7", test_id="widget-select",
+        web_id=1,
+        key="sku",
+        expected="Sprocket-7",
+        test_id="widget-select",
     )
     assert result.status == "PASS"
 
@@ -57,10 +64,23 @@ def test_web_select_option_requires_one_choice(loaded) -> None:
         backend.select_option(test_id="widget-select", value="a", label="b")
 
 
+def test_web_sim_wait_rejects_invalid_conditions(loaded) -> None:
+    from colosseum_gui.connections import get_web
+
+    backend = get_web(1)
+    with pytest.raises(ValueError, match="unsupported wait until"):
+        backend.wait(until="typo", role="button", name="Start")
+    with pytest.raises(ValueError, match="until=text requires text="):
+        backend.wait(until="text", role="button", name="Start")
+
+
 def test_desktop_sim_uia_click(loaded) -> None:
     col.gui.desktop.click(desktop_id=1, automation_id="StartBtn")
     result = col.gui.desktop.verify_text(
-        desktop_id=1, key="start", expected="Running", automation_id="StartBtn",
+        desktop_id=1,
+        key="start",
+        expected="Running",
+        automation_id="StartBtn",
     )
     assert result.status == "PASS"
 
@@ -326,9 +346,12 @@ def test_flaui_format_launch_args() -> None:
     assert _format_launch_args([]) is None
     assert _format_launch_args(["", "  "]) is None
     assert _format_launch_args("fixture --phrase X") == "fixture --phrase X"
-    assert _format_launch_args(
-        ["fixture", "--phrase", "spaced launch phrase", "--title", "Pa List Args", "--easy"],
-    ) == 'fixture --phrase "spaced launch phrase" --title "Pa List Args" --easy'
+    assert (
+        _format_launch_args(
+            ["fixture", "--phrase", "spaced launch phrase", "--title", "Pa List Args", "--easy"],
+        )
+        == 'fixture --phrase "spaced launch phrase" --title "Pa List Args" --easy'
+    )
 
 
 def test_desktop_sim_press_key_records_chord(loaded) -> None:

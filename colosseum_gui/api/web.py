@@ -5,9 +5,13 @@ from __future__ import annotations
 import time
 
 from colosseum.decorators import VerificationResult, command, measurement, verification
+from colosseum.logging import get_logger
 
 from colosseum_gui.api import _visual
-from colosseum_gui.connections import get_web
+from colosseum_gui.connections import get_config, get_web
+from colosseum_gui.locators import describe_target
+
+_logger = get_logger("colosseum.gui")
 
 __all__ = [
     "connect",
@@ -44,6 +48,8 @@ def connect(*, web_id: int) -> None:
     :raises GuiConnectionError: Browser or sim backend could not be opened.
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    cfg = get_config("web", web_id)
+    _logger.info("Opening web %s", cfg.get("url") or web_id)
     get_web(web_id)
 
 
@@ -60,6 +66,7 @@ def navigate(*, web_id: int, url: str) -> None:
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    _logger.info("Opening page %s", url)
     get_web(web_id).navigate(url=url)
 
 
@@ -101,6 +108,19 @@ def click(
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    _logger.info(
+        "Clicking %s on web %s",
+        describe_target(
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        web_id,
+    )
     get_web(web_id).click(
         role=role,
         name=name,
@@ -154,6 +174,19 @@ def type_text(
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    _logger.info(
+        "Typing into %s on web %s",
+        describe_target(
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        web_id,
+    )
     get_web(web_id).type_text(
         text=text,
         role=role,
@@ -208,6 +241,18 @@ def select_option(
     :raises ValueError: None or more than one of ``value`` / ``label`` / ``index``.
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    if label is not None:
+        choice: str | int | None = label
+    elif value is not None:
+        choice = value
+    else:
+        choice = index
+    _logger.info(
+        "Selecting %s on %s on web %s",
+        choice,
+        describe_target(role=role, name=name, test_id=test_id, css=css, xpath=xpath),
+        web_id,
+    )
     get_web(web_id).select_option(
         value=value,
         label=label,
@@ -231,6 +276,7 @@ def press_key(*, web_id: int, key: str) -> None:
 
     :returns: None
     """
+    _logger.info("Pressing %s on web %s", key, web_id)
     get_web(web_id).press_key(key=key)
 
 
@@ -269,6 +315,19 @@ def hover(
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    _logger.info(
+        "Hovering over %s on web %s",
+        describe_target(
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        web_id,
+    )
     get_web(web_id).hover(
         role=role,
         name=name,
@@ -324,6 +383,21 @@ def wait(
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    condition = until if text is None else f"{until} {text}"
+    _logger.info(
+        "Waiting for %s to be %s on web %s",
+        describe_target(
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        condition,
+        web_id,
+    )
     get_web(web_id).wait(
         until=until,
         timeout_s=timeout_s,
@@ -349,6 +423,7 @@ def wait_stable(*, web_id: int, timeout_s: float = 2.0) -> None:
 
     :returns: None
     """
+    _logger.info("Waiting for web %s to settle", web_id)
     get_web(web_id).wait_stable(timeout_s=timeout_s)
 
 
@@ -367,6 +442,7 @@ def capture_screenshot(*, web_id: int, path: str) -> None:
 
     :returns: None
     """
+    _logger.info("Capturing screenshot of web %s to %s", web_id, path)
     _visual.save_screenshot_artifact(get_web(web_id), path=path, kind="gui_web_screenshot")
 
 
@@ -387,6 +463,7 @@ def capture_tree(*, web_id: int, path: str = "captures/web_tree.json") -> None:
 
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
+    _logger.info("Capturing page tree of web %s to %s", web_id, path)
     _visual.save_tree_artifact(get_web(web_id), path=path, kind="gui_web_tree")
 
 
@@ -403,6 +480,7 @@ def measure_navigation_ms(*, web_id: int, key: str) -> float:
     :rtype: float
     """
     _ = key
+    _logger.info("Reading navigation time on web %s", web_id)
     return float(get_web(web_id).measure_navigation_ms())
 
 
@@ -444,6 +522,19 @@ def measure_action_latency_ms(
     :rtype: float
     """
     _ = key
+    _logger.info(
+        "Measuring click latency on %s on web %s",
+        describe_target(
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        web_id,
+    )
     backend = get_web(web_id)
     started = time.perf_counter()
     backend.click(role=role, name=name, test_id=test_id, css=css, xpath=xpath, x=x, y=y)
@@ -495,6 +586,7 @@ def measure_contrast_ratio(
     :rtype: float
     """
     _ = (web_id, key)
+    _logger.info("Measuring contrast in %s", path)
     return _visual.measure_contrast_ratio_from_path(
         path=path,
         fg_x=fg_x,
@@ -554,6 +646,19 @@ def verify_text(
     :raises GuiCapabilityError: Operation not supported by the configured driver.
     """
     _ = key
+    _logger.info(
+        "Verifying text of %s on web %s",
+        describe_target(
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        web_id,
+    )
     return _visual.verify_text_equals(
         get_web(web_id),
         expected=expected,
@@ -609,6 +714,19 @@ def verify_visible(
     :rtype: VerificationResult
     """
     _ = key
+    _logger.info(
+        "Verifying %s is visible on web %s",
+        describe_target(
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        web_id,
+    )
     return _visual.verify_is_visible(
         get_web(web_id),
         optional=optional,
@@ -663,6 +781,19 @@ def verify_enabled(
     :rtype: VerificationResult
     """
     _ = key
+    _logger.info(
+        "Verifying %s is enabled on web %s",
+        describe_target(
+            role=role,
+            name=name,
+            test_id=test_id,
+            css=css,
+            xpath=xpath,
+            x=x,
+            y=y,
+        ),
+        web_id,
+    )
     return _visual.verify_is_enabled(
         get_web(web_id),
         optional=optional,
@@ -705,6 +836,7 @@ def verify_visual(
     :rtype: VerificationResult
     """
     _ = key
+    _logger.info("Comparing screenshot %s to %s", path, baseline)
     return _visual.verify_visual_paths(
         path=path,
         baseline=baseline,
@@ -733,6 +865,7 @@ def verify_contrast(
     :returns: Pass/fail result.
     :rtype: VerificationResult
     """
+    _logger.info("Verifying contrast for %s", key)
     return _visual.verify_contrast_key(
         key=key,
         command_candidates=("web.measure_contrast_ratio",),

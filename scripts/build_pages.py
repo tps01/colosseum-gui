@@ -23,19 +23,19 @@ TITLE = "Colosseum GUI"
 SLUG = "gui"
 # (rst_stem, import_module, displayed col.* path)
 API_MODULES: tuple[tuple[str, str, str], ...] = (
-    ('web', 'colosseum_gui.api.web', 'col.gui.web'),
-    ('desktop', 'colosseum_gui.api.desktop', 'col.gui.desktop'),
+    ("web", "colosseum_gui.api.web", "col.gui.web"),
+    ("desktop", "colosseum_gui.api.desktop", "col.gui.desktop"),
 )
 # Optional single-function pages: (rst_stem, "module:qualname", displayed name)
-API_FUNCTIONS: tuple[tuple[str, str, str], ...] = (
-)
+API_FUNCTIONS: tuple[tuple[str, str, str], ...] = ()
 GUIDES: tuple[str, ...] = (
     "docs/sphinx/source/guides/drivers_locators.rst",
     "docs/sphinx/source/guides/development.rst",
-    "docs/sphinx/source/guides/api_conventions.rst",'docs/sphinx/source/guides/getting_started.rst', 'docs/sphinx/source/guides/visual_workflows.rst')
-CONFIG_REFERENCE: tuple[str, ...] = (
-    "docs/sphinx/source/config_reference.rst",
+    "docs/sphinx/source/guides/api_conventions.rst",
+    "docs/sphinx/source/guides/getting_started.rst",
+    "docs/sphinx/source/guides/visual_workflows.rst",
 )
+CONFIG_REFERENCE: tuple[str, ...] = ("docs/sphinx/source/config_reference.rst",)
 CONFIG_PACKAGE = "colosseum_gui"
 # --- end per-plugin constants ---
 
@@ -137,6 +137,7 @@ def _document_controls(app, what, name, obj, options, lines):
     controls = {{
         "optional": "False by default. True excludes unsuccessful outcomes from the aggregate result; commands and measurements also suppress operation exceptions. A failed optional measurement returns None.",
         "description": "Verification label in summaries and reports; omitted or blank uses the evidence key.",
+        "requirements": "Requirement identifiers attached to this verification. A comma-separated string or a list; omitted attaches none.",
     }}
     for parameter, description in controls.items():
         if parameter in inspect.signature(obj).parameters and f":param {{parameter}}:" not in documented:
@@ -195,14 +196,17 @@ def _write_index(
     config_names: list[str],
 ) -> None:
     lines = [
-        TITLE, "=" * len(TITLE), "",
-        'Automate web and desktop applications under test with ``col.gui.*``. The core desktop runner (``colosseum --gui``) launches tests.', "",
-        f"`Colosseum core documentation hub <{HUB_URL}>`__", "",
+        TITLE,
+        "=" * len(TITLE),
+        "",
+        "Automate web and desktop applications under test with ``col.gui.*``. The core desktop runner (``colosseum --gui``) launches tests.",
+        "",
+        f"`Colosseum core documentation hub <{HUB_URL}>`__",
+        "",
     ]
     development = [name for name in guide_names if name.endswith(("/development", "/driver-documentation-requests"))]
     learning = [name for name in guide_names if name not in development]
-    learning.sort(key=lambda name: (not name.endswith("/getting_started"),
-                                    name.endswith("/api_conventions")))
+    learning.sort(key=lambda name: (not name.endswith("/getting_started"), name.endswith("/api_conventions")))
     sections = (
         ("Overview", ["readme"]),
         ("Getting started and workflows", learning),
@@ -212,8 +216,7 @@ def _write_index(
     )
     for caption, names in sections:
         if names:
-            lines.extend([".. toctree::", "   :maxdepth: 1", "   :titlesonly:",
-                          f"   :caption: {caption}", ""])
+            lines.extend([".. toctree::", "   :maxdepth: 1", "   :titlesonly:", f"   :caption: {caption}", ""])
             lines.extend(f"   {name}" for name in names)
             lines.append("")
     (SITE_SOURCE / "index.rst").write_text("\n".join(lines), encoding="utf-8")
@@ -286,8 +289,12 @@ def _stage_config_reference() -> list[str]:
 def stage() -> None:
     # Fail when a root API export has no reference/navigation entry.
     api_source = REPO_ROOT / "colosseum_gui" / "api" / "__init__.py"
-    exported = next(ast.literal_eval(node.value) for node in ast.parse(api_source.read_text(encoding="utf-8-sig")).body
-                    if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets))
+    exported = next(
+        ast.literal_eval(node.value)
+        for node in ast.parse(api_source.read_text(encoding="utf-8-sig")).body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets)
+    )
     documented = {path.rsplit(".", 1)[-1] for _, _, path in (*API_MODULES, *API_FUNCTIONS)}
     missing = set(exported) - documented
     if missing:
