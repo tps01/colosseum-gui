@@ -36,40 +36,46 @@ class PlaywrightWebBackend:
         url = str(config.get("url") or "about:blank")
 
         self._pw = sync_playwright().start()
-        self._owns_browser = True
-        if cdp_url:
-            self._browser = self._pw.chromium.connect_over_cdp(str(cdp_url))
-            self._owns_browser = False
-            contexts = self._browser.contexts
-            self._context = contexts[0] if contexts else self._browser.new_context()
-            pages = self._context.pages
-            self._page = pages[0] if pages else self._context.new_page()
-        else:
-            launcher = getattr(self._pw, browser_name, None)
-            if launcher is None:
-                self.close()
-                raise GuiConnectionError(f"unsupported playwright browser `{browser_name}`")
-            self._browser = launcher.launch(headless=not headed)
-            viewport = config.get("viewport")
-            context_kwargs: dict[str, Any] = {}
-            if viewport:
-                # Accept "1280x720" strings.
-                parts = str(viewport).lower().split("x")
-                if len(parts) == 2:
-                    context_kwargs["viewport"] = {
-                        "width": int(parts[0]),
-                        "height": int(parts[1]),
-                    }
-            self._context = self._browser.new_context(**context_kwargs)
-            self._page = self._context.new_page()
-            self._page.set_default_timeout(self._timeout_ms)
-            if url and url != "about:blank":
-                self._page.goto(url, wait_until="domcontentloaded")
+        try:
+            self._owns_browser = True
+            if cdp_url:
+                self._browser = self._pw.chromium.connect_over_cdp(str(cdp_url))
+                self._owns_browser = False
+                contexts = self._browser.contexts
+                self._owns_context = not contexts
+                self._context = contexts[0] if contexts else self._browser.new_context()
+                pages = self._context.pages
+                self._page = pages[0] if pages else self._context.new_page()
+            else:
+                launcher = getattr(self._pw, browser_name, None)
+                if launcher is None:
+                    self.close()
+                    raise GuiConnectionError(f"unsupported playwright browser `{browser_name}`")
+                self._browser = launcher.launch(headless=not headed)
+                viewport = config.get("viewport")
+                context_kwargs: dict[str, Any] = {}
+                if viewport:
+                    # Accept "1280x720" strings.
+                    parts = str(viewport).lower().split("x")
+                    if len(parts) == 2:
+                        context_kwargs["viewport"] = {
+                            "width": int(parts[0]),
+                            "height": int(parts[1]),
+                        }
+                self._owns_context = True
+                self._context = self._browser.new_context(**context_kwargs)
+                self._page = self._context.new_page()
+                self._page.set_default_timeout(self._timeout_ms)
+                if url and url != "about:blank":
+                    self._page.goto(url, wait_until="domcontentloaded")
+        except BaseException:
+            self.close()
+            raise
         self._last_nav_ms = 0.0
 
     def close(self) -> None:
         for closer in (
-            getattr(self, "_context", None),
+            getattr(self, "_context", None) if getattr(self, "_owns_context", True) else None,
             getattr(self, "_browser", None) if getattr(self, "_owns_browser", True) else None,
         ):
             if closer is None:

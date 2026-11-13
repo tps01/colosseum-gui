@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    import pytest
+import pytest
 
 
 class _Page:
@@ -81,3 +78,27 @@ def test_two_playwright_backends_in_one_process(monkeypatch: pytest.MonkeyPatch)
 
     assert _SyncPlaywright.stops == 2
     assert _SyncPlaywright.running is False
+
+
+@pytest.mark.parametrize("stage", ["launch", "context", "page", "navigation"])
+def test_failed_initialization_releases_driver(monkeypatch: pytest.MonkeyPatch, stage: str) -> None:
+    import playwright.sync_api as sync_api
+    from colosseum_gui.backends.web.playwright_driver import PlaywrightWebBackend
+
+    _SyncPlaywright.running = False
+    _SyncPlaywright.stops = 0
+    monkeypatch.setattr(sync_api, "sync_playwright", lambda: _Starter())
+    def fail(*args: object, **kwargs: object) -> None:
+        raise RuntimeError(stage)
+    if stage == "launch":
+        monkeypatch.setattr(_Launcher, "launch", fail)
+    elif stage == "context":
+        monkeypatch.setattr(_Browser, "new_context", fail)
+    elif stage == "page":
+        monkeypatch.setattr(_Context, "new_page", fail)
+    else:
+        monkeypatch.setattr(_Page, "goto", fail, raising=False)
+    with pytest.raises(RuntimeError, match=stage):
+        PlaywrightWebBackend(web_id=1, config={"url": "https://example.test"})
+    assert not _SyncPlaywright.running
+    assert _SyncPlaywright.stops == 1
