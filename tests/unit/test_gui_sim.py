@@ -359,3 +359,18 @@ def test_desktop_sim_press_key_records_chord(loaded) -> None:
 
     col.gui.desktop.press_key(desktop_id=1, key="ctrl+shift+p")
     assert get_desktop(1).capture_meta().get("last_key") == "ctrl+shift+p"
+def test_artifact_path_containment(ctx, tmp_path):
+    from colosseum_gui._paths import resolve_artifact_path
+
+    run = tmp_path / "run"
+    run.mkdir()
+    ctx.output_dir = run
+    ctx.runtime_ready = True
+    for path in ("../run-other/captures/test.png", "../outside/test.png"):
+        with pytest.raises(ValueError, match="inside the active output directory"):
+            resolve_artifact_path(path)
+    assert not (tmp_path / "run-other").exists()
+    assert not (tmp_path / "outside").exists()
+    nested = resolve_artifact_path("captures/test.png")
+    assert nested.is_relative_to(run.resolve())
+    assert nested.parent.is_dir()
