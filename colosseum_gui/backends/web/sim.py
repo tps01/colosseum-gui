@@ -111,7 +111,8 @@ class SimWebBackend:
         x: float | None = None,
         y: float | None = None,
     ) -> None:
-        _ = (x, y)
+        if x is not None and y is not None and role is None and name is None and not (test_id or css or xpath):
+            return
         self._resolve_key(role=role, name=name, test_id=test_id, css=css, xpath=xpath)
 
     def wait(

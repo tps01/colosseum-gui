@@ -24,7 +24,7 @@ def get_config(kind: str, resource_id: int) -> dict[str, Any]:
     ctx = get_context()
     if ctx.config is None:
         raise ConfigError("Configuration is not loaded. Call col.config.load_config(path).")
-    return cast("dict[str, Any]", ctx.config.require_item(f"gui.{kind}", resource_id))
+    return ctx.config.require_item(f"gui.{kind}", resource_id)
 
 
 def get_web(web_id: int) -> WebBackend:
