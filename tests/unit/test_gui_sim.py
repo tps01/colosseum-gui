@@ -96,6 +96,31 @@ def test_desktop_sim_image_click(loaded, tmp_path: Path) -> None:
     assert meta.get("last_click") is not None
 
 
+def test_desktop_sim_hover_does_not_click(loaded, tmp_path: Path) -> None:
+    from colosseum_gui.connections import get_desktop
+
+    backend = get_desktop(1)
+    template = tmp_path / "button.png"
+    backend.render_button_template(template)
+    col.gui.desktop.hover(desktop_id=1, automation_id="StartBtn")
+    col.gui.desktop.hover(desktop_id=1, image=str(template))
+    col.gui.desktop.hover(desktop_id=1, x=10, y=20)
+    assert backend.capture_meta()["last_click"] is None
+    assert backend.get_text(automation_id="StartBtn") == "Start"
+    with pytest.raises(LookupError, match="not found"):
+        col.gui.desktop.hover(desktop_id=1, automation_id="Missing")
+    col.gui.desktop.click(desktop_id=1, automation_id="StartBtn")
+    assert backend.get_text(automation_id="StartBtn") == "Running"
+
+
+def test_web_sim_hover_accepts_coordinate_pair(loaded) -> None:
+    from colosseum_gui.exceptions import GuiCapabilityError
+
+    col.gui.web.hover(web_id=1, x=10, y=20)
+    with pytest.raises(GuiCapabilityError, match="locate"):
+        col.gui.web.hover(web_id=1, x=10)
+
+
 def test_kind_locator_signatures(loaded) -> None:
     """Public APIs omit wrong-kind locator kwargs (kind-honest surfaces)."""
     import inspect

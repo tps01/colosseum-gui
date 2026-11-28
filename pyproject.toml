@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "colosseum-gui"
-version = "0.4.8"
+version = "0.4.9"
 description = "Colosseum product UI automation plugin (web and desktop)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -59,15 +59,19 @@ max-complexity = 10
 [tool.mypy]
 python_version = "3.12"
 packages = ["colosseum_gui"]
+# Resolve the typed Core source from CI's editable sibling checkout.
+mypy_path = ["../colosseum-core"]
 exclude = ["tests/", "build/", "examples/"]
 strict = true
 warn_unused_ignores = true
 show_error_codes = true
 
 [[tool.mypy.overrides]]
+module = ["colosseum", "colosseum.*"]
+follow_imports = "silent"
+
+[[tool.mypy.overrides]]
 module = [
-  "colosseum",
-  "colosseum.*",
   "playwright",
   "playwright.*",
   "clr",

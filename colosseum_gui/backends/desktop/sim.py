@@ -67,7 +67,7 @@ class SimDesktopBackend:
                 node["text"] = "Running"
             return
         if image is not None:
-            self._click_image(image)
+            self._last_click = self._locate_image(image)
             return
         if x is not None and y is not None:
             self._last_click = (float(x), float(y))
@@ -120,15 +120,16 @@ class SimDesktopBackend:
         x: float | None = None,
         y: float | None = None,
     ) -> None:
-        self.click(
-            role=role,
-            name=name,
-            automation_id=automation_id,
-            xpath=xpath,
-            image=image,
-            x=x,
-            y=y,
-        )
+        if automation_id or role or name or xpath:
+            self._find_uia(automation_id=automation_id, role=role, name=name, xpath=xpath)
+        elif image is not None:
+            self._locate_image(image)
+        elif x is None or y is None:
+            unsupported(
+                self.driver_name,
+                "hover",
+                detail="provide automation_id/role+name, image=, or x+y",
+            )
 
     def wait(
         self,
@@ -247,7 +248,7 @@ class SimDesktopBackend:
     # Alias used by unit tests / catalog helpers.
     write_button_template = render_button_template
 
-    def _click_image(self, image: str) -> None:
+    def _locate_image(self, image: str) -> tuple[float, float]:
         shot = Path(image)
         # If path is a template, match against current framebuffer.
         frame = bytearray(solid_rgb(self._width, self._height, self._color))
@@ -260,7 +261,7 @@ class SimDesktopBackend:
         hit = find_template(bytes(frame), self._width, self._height, needle, nw, nh)
         if hit is None:
             raise LookupError(f"sim image template not found: {image}")
-        self._last_click = (float(hit[0] + nw / 2), float(hit[1] + nh / 2))
+        return (float(hit[0] + nw / 2), float(hit[1] + nh / 2))
 
     def _find_uia(
         self,
